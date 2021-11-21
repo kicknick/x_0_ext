@@ -1,280 +1,401 @@
 <!DOCTYPE html>
 <html>
+<style>
+table, th, td {
+  border:1px solid black;
+}
+</style>
 <head>
 	<title></title>
 </head>
 <body>
 	<canvas id='field'></canvas>
 	<br>
-	<button type="button" id = 'endButton'>end</button>
+	<button type="button" id = 'endButton'>step finished</button>
+  <div id='room'>
+    <table id='list_of_rooms'>
+    </table>
+    <div id='room'>
+      <input type="text" id="room_name_input" size="10">
+      <button id='create_room'>create room</button>
+    </div>
+  </div>
+<script type="module">
+  // Import the functions you need from the SDKs you need
 
-	<script type="text/javascript">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.5.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.5.0/firebase-analytics.js";
+  import { getDatabase, ref, set, onValue, child, get, push, onChildChanged, update} from "https://www.gstatic.com/firebasejs/9.5.0/firebase-database.js";
+  import { collection, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.5.0/firebase-firestore.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
- 		//var minSide = Math.min(document.documentElement.clientHeight, width=document.documentElement.clientWidth),
- 		var minSide = 500,
- 		w = 70
- 		,canvas, ctx
- 		,data = [[3, 3, 3], //number of items small, medium and big
- 						[3, 3, 3]]
- 		,data_clone = JSON.parse(JSON.stringify(data))
- 		,isActive = 1
- 		,map = [[0, 0, 0]
- 			   ,[0, 0, 0]
- 			   ,[0, 0, 0]]
- 		,map_clone = JSON.parse(JSON.stringify(map))
- 		,i_prev = -1, j_prev = -1
- 		,k_s
- 		,end_button = document.getElementById('endButton')
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyA4_iuedKoTwrHlK70CSi6oSXL2qKr-b7w",
+    authDomain: "x0ext-a2ffb.firebaseapp.com",
+    databaseURL: "https://x0ext-a2ffb-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "x0ext-a2ffb",
+    storageBucket: "x0ext-a2ffb.appspot.com",
+    // messagingSenderId: "175344685958",
+    appId: "1:175344685958:web:ed8a7aadce6379e2b05207",
+    // measurementId: "G-TJSJWKKY1W"
+  };
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+// Required for side-effects
+  const db = getDatabase(app);
+  const roomListRef = ref(db, 'rooms');
 
- 		//1, 2, 3 = player1
- 		//4, 8, 12 = player2
+let rooms
+//------------Rooms updated listener--------
+  onValue(roomListRef, (snapshot) => {
+    const data = snapshot.val();
+    rooms = data
+    showRoomList(data)
+  });
+
+  // const unsub = onSnapshot(doc(collection(db, "rooms"), "filled"), (doc) => {
+  //     console.log("Current data: ", doc.data());
+  // });
 
 
+//-------Create room-----------
+  function createRoom(name, callback) {
+    const newRoomRef = push(roomListRef);
+    set(newRoomRef, {
+      name: name,
+      map: [[1], [2], [3]],
+      data: [0],
+      filled: false,
+      isActive: 0
+    });
+    var roomID = newRoomRef.key;
+    console.log(roomID)
+    callback()
+  }
+//createRoom('qqqqq', function() {}) 
 
-    var initGame = function() {
-        canvas = document.getElementById('field')
-        canvas.width = minSide
-        canvas.height = w*3
-        ctx = canvas.getContext("2d");
+  function create_room() {
+    createRoom(document.getElementById("room_name_input").value, function() {
+    })
+    document.getElementById("room_name_input").value = ''
+  }
 
-        document.addEventListener("click", e => {
-        	clicked(e.x, e.y)
+
+  function showRoomList(list) {
+    let list_of_rooms = document.getElementById('list_of_rooms')
+    list_of_rooms.innerHTML = '<tr><th>Rooms</th></tr>';
+      for(let i in list) {
+        let td = document.createElement('td')
+        td.innerText = list[i].name + (list[i].filled ? " (filled)" : "")
+        td.setAttribute('id', i)
+        td.addEventListener('click', function(){
+          room_choosed(this.id)
         });
-
-        document.getElementById('endButton').addEventListener("click", e => {
-        	end_button_clicked()
-        });
+        let tr = document.createElement('tr')
+        tr.setAttribute("style", 'cursor: pointer');
+        tr.setAttribute("onmouseover", "this.style.textDecoration='underline';")
+        tr.setAttribute("onmouseout", "this.style.textDecoration='none';")
+        tr.appendChild(td)
+        list_of_rooms.appendChild(tr)
       }
+  }
 
 
+//----------Room changed---------
+  onChildChanged(roomListRef, (data) => {
+    console.log(data.key); //, data.val().text, data.val().author
+  });
 
-    let end_button_clicked = () => {
-    	if (isActive == 1) isActive = 2
-    	else isActive = 1
-    	map = JSON.parse(JSON.stringify(map_clone))
-    	data = JSON.parse(JSON.stringify(data_clone))
-    	render(map, data)
+
+//---------Room selected--------
+  function room_choosed(id) {
+    // console.log(current_room_id, id)
+    if(rooms[id].filled == false) {
+      const updates = {}
+      updates['/rooms/' + id + '/filled' ] = true
+      update(ref(db), updates)
+      if(current_room_id != null) {
+        updates['/rooms/' + current_room_id + '/filled' ] = false
+        update(ref(db), updates)
+        document.getElementById(current_room_id).style.fontWeight = '';
+      }
+      document.getElementById(id).style.fontWeight = 'bold';
+      current_room_id = id
     }
+    // get(child(roomsRef, `${id}`)).then((snapshot) => {
+    //   if (snapshot.exists()) {
+    //     console.log(snapshot.val());
+    //   } else {
+    //     console.log("No data available");
+    //   }
+    // }).catch((error) => {
+    //   console.error(error);
+    // });
+  }
+
+
+
+
+		//var minSide = Math.min(document.documentElement.clientHeight, width=document.documentElement.clientWidth),
+	var minSide = 500,
+	w = 70
+	,canvas, ctx
+	,data = [[3, 3, 3], //number of items small, medium and big
+					[3, 3, 3]]
+	,data_clone = JSON.parse(JSON.stringify(data))
+	,isActive = 1
+	,map = [[0, 0, 0]
+		     ,[0, 0, 0]
+		     ,[0, 0, 0]]
+  ,map_clone = JSON.parse(JSON.stringify(map))
+	,i_prev = -1, j_prev = -1
+	,k_s, k
+	,end_button = document.getElementById('endButton')
+  ,current_room_id = null
+
+		//1, 2, 3 = player1
+		//4, 8, 12 = player2
+
+
+  function initGame() {
+    canvas = document.getElementById('field')
+    canvas.width = minSide
+    canvas.height = w*3
+    ctx = canvas.getContext("2d");
+
+    document.addEventListener("click", e => {
+    	clicked(e.x, e.y)
+    });
+
+    document.getElementById('endButton').addEventListener("click", e => {
+    	end_button_clicked()
+    });
+
+    document.getElementById('create_room').addEventListener("click", e => {
+      create_room()
+    });
+  }
+
+
+
+  function end_button_clicked() {
+    end_button.style.display = "none";
+  	if (isActive == 1) isActive = 2
+  	else isActive = 1
+  	map = JSON.parse(JSON.stringify(map_clone))
+  	data = JSON.parse(JSON.stringify(data_clone))
+  	render(map, data)
+  }
 
 //------------Click on cell------
-    let prev_cell = [0, 0], cell = [0, 0], size = 0
+  let prev_cell = [0, 0], cell = [0, 0], size = 0
 
-    let clicked = (x, y) => {
-    	prev_cell = cell
-    	// console.log(cell, prev_cell)
-    	if(x<w && y<w) {
-    		put_item(0, 0)
+  function clicked(x, y) {
+  	prev_cell = cell
+  	// console.log(cell, prev_cell)
+  	if(x<w && y<w) {
+  		put_item(0, 0)
+  	}
+  	if(x>w && x<w*2 && y<w) {
+  		put_item(0, 1)
+  	}
+  	if(x>w*2 && x<w*3 && y<w) {
+  		put_item(0, 2)
+  	}
+  	if(x<w && y>w && y<w*2) {
+  		put_item(1, 0)
+  	}
+  	if(x>w && x<w*2 && y>w && y<w*2) {
+  		put_item(1, 1)
+  	}
+  	if(x>w*2 && x<w*3 && y>w && y<w*2) {
+  		put_item(1, 2)
+  	}
+  	if(x<w && y>w*2 && y<w*3) {
+  		put_item(2, 0)
+  	}
+  	if(x>w && x<w*2 && y>w*2 && y<w*3) {
+  		put_item(2, 1)
+  	}
+  	if(x>w*2 && x<w*3 && y>w*2 && y<w*3) {
+  		put_item(2, 2)
+  	}
+  }
+
+  function compare_arrays(a1, a2) {
+  	for(let i=0; i<3; i++) {
+  		for(let j=0; j<3; j++) {
+  			if(a1[i][j] != a2[i][j]) {
+  				return 0
+  			}
+  		}
+  	}
+  	return 1
+  }
+
+  function display_end_button(res) {
+  	if(res == 1)
+  		end_button.style.display = "none"
+  	else
+  		end_button.style.display = ""
+  }
+
+  function put_item(i, j) {
+  	let s = map[i][j]
+  	if(s > 3) {
+  		s = s / 4
+  	}
+  	if(s < 3) {
+  		data_clone = JSON.parse(JSON.stringify(data))
+    	map_clone = JSON.parse(JSON.stringify(map))
+    	if(i != i_prev || j != j_prev || k_s >= 3) {
+    		k_s = 0
     	}
-    	if(x>w && x<w*2 && y<w) {
-    		put_item(0, 1)
+
+    	console.log(i, j, i_prev, j_prev, s, k_s)
+    	i_prev = i
+    	j_prev = j
+
+    	for(k=k_s; k<3; k++) {
+    		if(data[isActive-1][k] > 0 && k+1>s) break;
     	}
-    	if(x>w*2 && x<w*3 && y<w) {
-    		put_item(0, 2)
-    	}
-    	if(x<w && y>w && y<w*2) {
-    		put_item(1, 0)
-    	}
-    	if(x>w && x<w*2 && y>w && y<w*2) {
-    		put_item(1, 1)
-    	}
-    	if(x>w*2 && x<w*3 && y>w && y<w*2) {
-    		put_item(1, 2)
-    	}
-    	if(x<w && y>w*2 && y<w*3) {
-    		put_item(2, 0)
-    	}
-    	if(x>w && x<w*2 && y>w*2 && y<w*3) {
-    		put_item(2, 1)
-    	}
-    	if(x>w*2 && x<w*3 && y>w*2 && y<w*3) {
-    		put_item(2, 2)
-    	}
+    	k_s = k+1
+    	data_clone[isActive-1][k] -= 1
+    	map_clone[i][j] = (k_s) * isActive**2
+    	display_end_button(compare_arrays(map, map_clone))
     }
+    	render(map_clone, data_clone)
+  }
 
-    let compare_arrays = (a1, a2) => {
-    	for(i=0; i<3; i++) {
-    		for(j=0; j<3; j++) {
-    			if(a1[i][j] != a2[i][j]) {
-    				return 0
-    			}
-    		}
-    	}
-    	return 1
-    }
 
-    let display_end_button = (res) => {
-    	if(res == 1)
-    		end_button.style.display = "none"
-    	else
-    		end_button.style.display = ""
-    }
-
-    let put_item = (i, j) => {
-    	let s = map[i][j]
+  function get_smallest_size(cell) {
+  	let s = map[cell[0]][cell[1]]
+  	if(s == 0) return 1
+  	else {
     	if(s > 3) {
     		s = s / 4
     	}
-    	if(s < 3) {
-    		data_clone = JSON.parse(JSON.stringify(data))
-	    	map_clone = JSON.parse(JSON.stringify(map))
-	    	if(i != i_prev || j != j_prev || k_s >= 3) {
-	    		k_s = 0
-	    	}
-
-	    	console.log(i, j, i_prev, j_prev, s, k_s)
-	    	i_prev = i
-	    	j_prev = j
-
-	    	for(k=k_s; k<3; k++) {
-	    		if(data[isActive-1][k] > 0 && k+1>s) break;
-	    	}
-	    	k_s = k+1
-	    	data_clone[isActive-1][k] -= 1
-	    	map_clone[i][j] = (k_s) * isActive**2
-	    	display_end_button(compare_arrays(map, map_clone))
-	    }
-	    	render(map_clone, data_clone)
-    }
-
-
-    let get_smallest_size = (cell) => {
-    	let s = map[cell[0]][cell[1]]
-    	if(s == 0) return 1
-    	else {
-	    	if(s > 3) {
-	    		s = s / 4
-	    	}
-	    	return s
-    	}
-    }
-
-   //  let choose_size = (x, y) => {
-   //  	let smallest_size = get_smallest_size(cell)
-   //  	console.log('smallest_size:', smallest_size, 'size:', size)
-   //  	if (smallest_size <= 3) {
-	  // 		if(cell[0] == prev_cell[0] && cell[1] == prev_cell[1] || smallest_size == 1) {
-	  // 			if(size + smallest_size == 3) {
-	  // 				size = 0
-	  // 			}
-	  // 			else {
-	  // 				size += 1
-	  // 			}
-	  // 		}
-	  // 		else {
-	  // 			size = 0
-	  // 		}
-
-	  // 		console.log(cell, prev_cell)
-	  // 		map[cell[0]][cell[1]] = size * isActive * isActive
-	  // 		render()
-	  // 	// 	ctx.clearRect(x-w/2+2, y-w/2+2, w-4, w-4)
-			// 	// draw_circle(x, y, (smallest_size+size)*5, color)
-			// }
-   //  }
+    	return s
+  	}
+  }
 
 
 //-------- Render------
-    let draw_circle = (x, y, size, color) => {
-    	ctx.beginPath()
-    	ctx.arc(x, y, size, 0, 2 * Math.PI);
-			ctx.fillStyle = color
-			ctx.fill();
-			ctx.stroke();
-			ctx.closePath()
+  function draw_circle(x, y, size, color) {
+  	ctx.beginPath()
+  	ctx.arc(x, y, size, 0, 2 * Math.PI);
+		ctx.fillStyle = color
+		ctx.fill();
+		ctx.stroke();
+		ctx.closePath()
+  }
+
+
+  function map_build(map) {
+    for(let i=1; i<3; i++) {
+        // ctx.fillStyle = "#00000";
+        ctx.beginPath();
+        ctx.moveTo(i*w, 0);
+        ctx.lineTo(i*w, w*3);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, i*w);
+        ctx.lineTo(w*3, i*w);
+        ctx.stroke();
     }
-
-
-    let map_build = (map) => {
-        for(i=1; i<3; i++) {
-            // ctx.fillStyle = "#00000";
-            ctx.beginPath();
-            ctx.moveTo(i*w, 0);
-            ctx.lineTo(i*w, w*3);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(0, i*w);
-            ctx.lineTo(w*3, i*w);
-            ctx.stroke();
-        }
-        //draw circles
-        for(i=0; i<3; i++) {
-        	for(j=0; j<3; j++) {
-        		let s = map[j][i]
-        		if(s != 0) {
-        			if(s <= 3) {
-        				draw_circle((i+1)*w - w/2, (j+1)*w - w/2, s*5, 'red')
-        			}
-        			else {
-        				draw_circle((i+1)*w - w/2, (j+1)*w - w/2, (s/4)*5, 'blue')
-        			}
-        		}
-        	}
-        }
+    //draw circles
+    for(let i=0; i<3; i++) {
+    	for(let j=0; j<3; j++) {
+    		let s = map[j][i]
+    		if(s != 0) {
+    			if(s <= 3) {
+    				draw_circle((i+1)*w - w/2, (j+1)*w - w/2, s*5, 'red')
+    			}
+    			else {
+    				draw_circle((i+1)*w - w/2, (j+1)*w - w/2, (s/4)*5, 'blue')
+    			}
+    		}
+    	}
     }
+  }
 
 
-
-
-		let build_player = (player, data) => {
-			let c, h, p
-			if (player == 1) {
-				c = 'red'
-				h = 0
-				p = data[0]
-			}
-			else {
-				c = 'blue'
-				h = 100
-				p = data[1]
-			}
-
-			// ctx.font = '48px serif';
-			// ctx.fillText(text, 250, 0+h);
-
-
-			for(i = 0; i<p[0]; i++) {
-				draw_circle(250+i*10, 10+h, 5, c)
-			}
-			for(i = 0; i<p[1]; i++) {
-        draw_circle(250+i*20, 35+h, 10, c)
-			}
-
-			for(i = 0; i<p[2]; i++) {
-        draw_circle(250+i*30, 70+h, 15, c)
-			}
+	function build_player(player, data) {
+		let c, h, p
+		if (player == 1) {
+			c = 'red'
+			h = 0
+			p = data[0]
+		}
+		else {
+			c = 'blue'
+			h = 100
+			p = data[1]
 		}
 
+		// ctx.font = '48px serif';
+		// ctx.fillText(text, 250, 0+h);
 
 
-		var render = (map, data) => {
-			ctx.clearRect(0, 0, minSide, w*3)
-			//border around current player
-			ctx.beginPath()
-
-			if (isActive == 1) {
-				ctx.rect(220, 0, 140, 100);
-			}
-			else {
-				ctx.rect(220, 100, 140, 100);
-			}
-			ctx.stroke();
-			ctx.closePath()
-
-
-			map_build(map)
-			build_player(1, data)
-			build_player(2, data)
-
+		for(let i = 0; i<p[0]; i++) {
+			draw_circle(250+i*10, 10+h, 5, c)
 		}
+		for(let i = 0; i<p[1]; i++) {
+      draw_circle(250+i*20, 35+h, 10, c)
+		}
+
+		for(let i = 0; i<p[2]; i++) {
+      draw_circle(250+i*30, 70+h, 15, c)
+		}
+	}
+
+
+
+	function render(map, data) {
+		ctx.clearRect(0, 0, minSide, w*3)
+		//border around current player
+		ctx.beginPath()
+
+		if (isActive == 1) {
+			ctx.rect(220, 0, 140, 100);
+		}
+		else {
+			ctx.rect(220, 100, 140, 100);
+		}
+		ctx.stroke();
+		ctx.closePath()
+
+
+		map_build(map)
+		build_player(1, data)
+		build_player(2, data)
+
+	}
 //-----------------------------------
 
 
-		initGame()
-		render(map, data)
-		end_button.style.display = "none";
 
-	</script>
+// window.addEventListener("load", function(){
+//   console.log('loaded')
+// });
+
+
+
+//-----------------
+
+  initGame()
+	render(map, data)
+	end_button.style.display = "none";
+
+</script>
+
+
+
 
 </body>
 </html>
