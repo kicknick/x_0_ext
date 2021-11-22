@@ -228,8 +228,8 @@ function eraseCookie(name) {
 	var minSide = 500,
 	w = 70
 	,canvas, ctx
-	,data = [[3, 3, 3], //number of items small, medium and big
-					[3, 3, 3]]
+	,data = [[5, 3, 1], //number of items small, medium and big
+					[5, 3, 1]]
 	,data_clone = JSON.parse(JSON.stringify(data))
 	,isActive = 1 //current player 1 or 2 if 0 - not started yet
 	,map = [[0, 0, 0]
@@ -319,8 +319,9 @@ function eraseCookie(name) {
   	else isActive = 1
   	map = JSON.parse(JSON.stringify(map_clone))
   	data = JSON.parse(JSON.stringify(data_clone))
-    render_map(map)
-    render_data(data)
+    // console.log(map)
+    // render_map(map)
+    // render_data(data)
     updateMap(map)
     updateData(data)
     update_isActive(isActive)
@@ -404,10 +405,10 @@ function eraseCookie(name) {
     	for(k=k_s; k<3; k++) {
         if(data[isActive-1][k] > 0 && k+1 > s) break;
     	}
-      if(data[isActive-1][k] > 0){
+      if(data[isActive-1][k] > 0) {
       	k_s = k+1
       	data_clone[isActive-1][k] -= 1
-        console.log('k_s', k_s)
+        // console.log('k_s', k_s)
       	map_clone[i][j] = (k_s) * isActive**2
         console.log(map_clone)
       	display_end_button(compare_arrays(map, map_clone))
@@ -539,7 +540,7 @@ function eraseCookie(name) {
 	render_map(map)
   render_data(data)
 
-// createRoom('xxxx', function() {}) 
+//createRoom('aaaa', function() {}) 
 
 </script>
 
