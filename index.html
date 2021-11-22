@@ -15,11 +15,12 @@ table, th, td {
   <div id='room'>
     <table id='list_of_rooms'>
     </table>
-    <div id='room'>
+<!--     <div>
       <input type="text" id="room_name_input" size="10">
       <button id='create_room'>create room</button>
-    </div>
+    </div> -->
   </div>
+
 <script type="module">
   // Import the functions you need from the SDKs you need
 
@@ -49,7 +50,7 @@ table, th, td {
   const db = getDatabase(app);
   const roomListRef = ref(db, 'rooms');
 
-let rooms
+  let rooms
 //------------Rooms updated listener--------
   onValue(roomListRef, (snapshot) => {
     const data = snapshot.val();
@@ -57,9 +58,30 @@ let rooms
     showRoomList(data)
   });
 
-  // const unsub = onSnapshot(doc(collection(db, "rooms"), "filled"), (doc) => {
-  //     console.log("Current data: ", doc.data());
-  // });
+//------------Map, Data, isAcive updated listener----------
+  function map_listener(current_room_id) {
+    const mapRef = ref(db, 'rooms/'+ current_room_id + '/map');
+    onValue(mapRef, (snapshot) => {
+      map = snapshot.val();
+      render_map(map)
+    });
+  }
+
+  function data_listener(current_room_id) {
+    const dataRef = ref(db, 'rooms/'+ current_room_id + '/data');
+    onValue(dataRef, (snapshot) => {
+      data = snapshot.val();
+      render_data(data)
+    });
+  }
+
+  function isActive_listener(current_room_id) {
+    const isActiveRef = ref(db, 'rooms/'+ current_room_id + '/isActive');
+    onValue(isActiveRef, (snapshot) => {
+      isActive = snapshot.val();
+      render_data(data)
+    });
+  }
 
 
 //-------Create room-----------
@@ -67,10 +89,10 @@ let rooms
     const newRoomRef = push(roomListRef);
     set(newRoomRef, {
       name: name,
-      map: [[1], [2], [3]],
-      data: [0],
+      map: map,
+      data: data,
       filled: false,
-      isActive: 0
+      isActive: 1
     });
     var roomID = newRoomRef.key;
     console.log(roomID)
@@ -90,7 +112,11 @@ let rooms
     list_of_rooms.innerHTML = '<tr><th>Rooms</th></tr>';
       for(let i in list) {
         let td = document.createElement('td')
-        td.innerText = list[i].name + (list[i].filled ? " (filled)" : "")
+        td.innerText = list[i].name //+ (list[i].filled ? " (filled)" : "")
+        // console.log(i, current_room_id, i == current_room_id, ' list[i] == current_room_id')
+        td.style.fontWeight = i == current_room_id ? "bold" : "normal"
+        td.style.textDecoration = list[i].filled ? "line-through" : "none"
+        //list[i].filled ? td.setAttribute("style", 'text-decoration: line-through') : td.setAttribute("style", 'text-decoration: none')
         td.setAttribute('id', i)
         td.addEventListener('click', function(){
           room_choosed(this.id)
@@ -106,40 +132,80 @@ let rooms
 
 
 //----------Room changed---------
-  onChildChanged(roomListRef, (data) => {
-    console.log(data.key); //, data.val().text, data.val().author
-  });
+  // onChildChanged(roomListRef, (data) => {
+  //   console.log(data.key); //, data.val().text, data.val().author
+  // });
 
 
 //---------Room selected--------
   function room_choosed(id) {
-    // console.log(current_room_id, id)
-    if(rooms[id].filled == false) {
-      const updates = {}
-      updates['/rooms/' + id + '/filled' ] = true
-      update(ref(db), updates)
-      if(current_room_id != null) {
-        updates['/rooms/' + current_room_id + '/filled' ] = false
-        update(ref(db), updates)
-        document.getElementById(current_room_id).style.fontWeight = '';
-      }
+    console.log(current_room_id, id, rooms[id])
+    // if(rooms[id].filled == false) {
+    //   const updates = {}
+    //   updates['/rooms/' + id + '/filled' ] = true
+    //   update(ref(db), updates)
+      // if(current_room_id != null) {
+      //   updates['/rooms/' + current_room_id + '/filled' ] = false
+      //   update(ref(db), updates)
+      //   document.getElementById(current_room_id).style.fontWeight = '';
+      // }
       document.getElementById(id).style.fontWeight = 'bold';
       current_room_id = id
-    }
-    // get(child(roomsRef, `${id}`)).then((snapshot) => {
-    //   if (snapshot.exists()) {
-    //     console.log(snapshot.val());
-    //   } else {
-    //     console.log("No data available");
-    //   }
-    // }).catch((error) => {
-    //   console.error(error);
-    // });
+      setCookie('current_room_id', current_room_id, 999)
+      map_listener(current_room_id)
+      data_listener(current_room_id)
+      isActive_listener(current_room_id)
+    // }
+  }
+
+
+//--------Update map and data--------
+  function updateMap(map) {
+    const updates = {}
+    updates['/rooms/' + current_room_id + '/map' ] = map
+    update(ref(db), updates)
+  }
+
+  function updateData(data) {
+    const updates = {}
+    updates['/rooms/' + current_room_id + '/data' ] = data
+    update(ref(db), updates)
+  }
+
+  function update_isActive(isActive) {
+    const updates = {}
+    updates['/rooms/' + current_room_id + '/isActive' ] = isActive
+    update(ref(db), updates)
   }
 
 
 
 
+//-------------Cookies-------
+function setCookie(name,value,days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days*24*60*60*1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+}
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+}
+function eraseCookie(name) {   
+    document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+}
+
+//---------------Main block------------------
 		//var minSide = Math.min(document.documentElement.clientHeight, width=document.documentElement.clientWidth),
 	var minSide = 500,
 	w = 70
@@ -147,7 +213,7 @@ let rooms
 	,data = [[3, 3, 3], //number of items small, medium and big
 					[3, 3, 3]]
 	,data_clone = JSON.parse(JSON.stringify(data))
-	,isActive = 1
+	,isActive = 1 //current player 1 or 2 if 0 - not started yet
 	,map = [[0, 0, 0]
 		     ,[0, 0, 0]
 		     ,[0, 0, 0]]
@@ -167,63 +233,80 @@ let rooms
     canvas.height = w*3
     ctx = canvas.getContext("2d");
 
-    document.addEventListener("click", e => {
+    document.getElementById('field').addEventListener("click", e => {
     	clicked(e.x, e.y)
     });
 
     document.getElementById('endButton').addEventListener("click", e => {
     	end_button_clicked()
     });
+    end_button.style.display = "none";
 
-    document.getElementById('create_room').addEventListener("click", e => {
-      create_room()
-    });
+    // document.getElementById('create_room').addEventListener("click", e => {
+    //   create_room()
+    // });
+
+    current_room_id = getCookie('current_room_id')
+    console.log(current_room_id)
+
+    // map_listener(current_room_id)
+    // data_listener(current_room_id)
   }
 
 
-
+//----------Map changed-----------
   function end_button_clicked() {
+    // console.log(current_room_id)
     end_button.style.display = "none";
   	if (isActive == 1) isActive = 2
   	else isActive = 1
   	map = JSON.parse(JSON.stringify(map_clone))
   	data = JSON.parse(JSON.stringify(data_clone))
-  	render(map, data)
+    render_map(map)
+    render_data(data)
+    updateMap(map)
+    updateData(data)
+    update_isActive(isActive)
   }
 
-//------------Click on cell------
+//------------Click on cell on map------
   let prev_cell = [0, 0], cell = [0, 0], size = 0
 
   function clicked(x, y) {
-  	prev_cell = cell
-  	// console.log(cell, prev_cell)
-  	if(x<w && y<w) {
-  		put_item(0, 0)
-  	}
-  	if(x>w && x<w*2 && y<w) {
-  		put_item(0, 1)
-  	}
-  	if(x>w*2 && x<w*3 && y<w) {
-  		put_item(0, 2)
-  	}
-  	if(x<w && y>w && y<w*2) {
-  		put_item(1, 0)
-  	}
-  	if(x>w && x<w*2 && y>w && y<w*2) {
-  		put_item(1, 1)
-  	}
-  	if(x>w*2 && x<w*3 && y>w && y<w*2) {
-  		put_item(1, 2)
-  	}
-  	if(x<w && y>w*2 && y<w*3) {
-  		put_item(2, 0)
-  	}
-  	if(x>w && x<w*2 && y>w*2 && y<w*3) {
-  		put_item(2, 1)
-  	}
-  	if(x>w*2 && x<w*3 && y>w*2 && y<w*3) {
-  		put_item(2, 2)
-  	}
+    if(current_room_id != null) {
+    	prev_cell = cell
+    	// console.log(cell, prev_cell)
+    	if(x<w && y<w) {
+    		put_item(0, 0)
+    	}
+    	if(x>w && x<w*2 && y<w) {
+    		put_item(0, 1)
+    	}
+    	if(x>w*2 && x<w*3 && y<w) {
+    		put_item(0, 2)
+    	}
+    	if(x<w && y>w && y<w*2) {
+    		put_item(1, 0)
+    	}
+    	if(x>w && x<w*2 && y>w && y<w*2) {
+    		put_item(1, 1)
+    	}
+    	if(x>w*2 && x<w*3 && y>w && y<w*2) {
+    		put_item(1, 2)
+    	}
+    	if(x<w && y>w*2 && y<w*3) {
+    		put_item(2, 0)
+    	}
+    	if(x>w && x<w*2 && y>w*2 && y<w*3) {
+    		put_item(2, 1)
+    	}
+    	if(x>w*2 && x<w*3 && y>w*2 && y<w*3) {
+    		put_item(2, 2)
+    	}
+    }
+    else {
+      alert('choose a room to play')
+    }
   }
 
   function compare_arrays(a1, a2) {
@@ -268,7 +351,8 @@ let rooms
     	map_clone[i][j] = (k_s) * isActive**2
     	display_end_button(compare_arrays(map, map_clone))
     }
-    	render(map_clone, data_clone)
+      render_map(map_clone)
+      render_data(data_clone)
   }
 
 
@@ -295,18 +379,21 @@ let rooms
   }
 
 
-  function map_build(map) {
+  function render_map(map) {
+    ctx.clearRect(0, 0, w*3, w*3)
     for(let i=1; i<3; i++) {
-        // ctx.fillStyle = "#00000";
+        //ctx.fillStyle = "#00000";
         ctx.beginPath();
         ctx.moveTo(i*w, 0);
         ctx.lineTo(i*w, w*3);
-        ctx.stroke();
+        ctx.stroke()
+        ctx.closePath()
 
         ctx.beginPath();
         ctx.moveTo(0, i*w);
         ctx.lineTo(w*3, i*w);
-        ctx.stroke();
+        ctx.stroke()
+        ctx.closePath()
     }
     //draw circles
     for(let i=0; i<3; i++) {
@@ -356,26 +443,24 @@ let rooms
 
 
 
-	function render(map, data) {
-		ctx.clearRect(0, 0, minSide, w*3)
-		//border around current player
-		ctx.beginPath()
 
-		if (isActive == 1) {
-			ctx.rect(220, 0, 140, 100);
-		}
-		else {
-			ctx.rect(220, 100, 140, 100);
-		}
-		ctx.stroke();
-		ctx.closePath()
+  function render_data(data) {
+    ctx.clearRect(w*3, 0, minSide, w*3)
+    //border around current player
+    ctx.beginPath()
 
+    if (isActive == 1) {
+      ctx.rect(220, 0, 140, 100);
+    }
+    else {
+      ctx.rect(220, 100, 140, 100);
+    }
+    ctx.stroke();
+    ctx.closePath()
 
-		map_build(map)
-		build_player(1, data)
-		build_player(2, data)
-
-	}
+    build_player(1, data)
+    build_player(2, data)
+  }
 //-----------------------------------
 
 
@@ -389,8 +474,13 @@ let rooms
 //-----------------
 
   initGame()
-	render(map, data)
-	end_button.style.display = "none";
+	render_map(map)
+  render_data(data)
+        // ctx.beginPath();
+        // ctx.moveTo(0, 0);
+        // ctx.lineTo(0, 100);
+        // ctx.stroke()
+        // ctx.closePath()
 
 </script>
 
