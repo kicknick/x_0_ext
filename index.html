@@ -15,10 +15,10 @@ table, th, td {
   <div id='room'>
     <table id='list_of_rooms'>
     </table>
-<!--     <div>
+    <div>
       <input type="text" id="room_name_input" size="10">
       <button id='create_room'>create room</button>
-    </div> -->
+    </div>
   </div>
 
 <script type="module">
@@ -242,9 +242,9 @@ function eraseCookie(name) {
     });
     end_button.style.display = "none";
 
-    // document.getElementById('create_room').addEventListener("click", e => {
-    //   create_room()
-    // });
+    document.getElementById('create_room').addEventListener("click", e => {
+      create_room()
+    });
 
     current_room_id = getCookie('current_room_id')
     console.log(current_room_id)
@@ -268,7 +268,7 @@ function eraseCookie(name) {
         alert('Player 1 won!')
         break;
       }
-      if(w2 == 3) {
+      else if(w2 == 3) {
         alert('Player 2 won!')
         break;
       }
@@ -280,7 +280,7 @@ function eraseCookie(name) {
           else w2+=1
     }
     if(w1 == 3) alert('Player 1 won!')
-    if(w2 == 3) alert('Player 2 won!')
+    else if(w2 == 3) alert('Player 2 won!')
 
   }
 
