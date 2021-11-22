@@ -83,6 +83,13 @@ table, th, td {
     });
   }
 
+  function who_won_listener(current_room_id) {
+    const who_wonRef = ref(db, 'rooms/'+ current_room_id + '/who_won');
+    onValue(who_wonRef, (snapshot) => {
+      alert('Player ', snapshot.val(), 'won')
+    });
+  }
+
 
 //-------Create room-----------
   function createRoom(name, callback) {
@@ -92,7 +99,8 @@ table, th, td {
       map: map,
       data: data,
       filled: false,
-      isActive: 1
+      isActive: 1,
+      who_won: 0
     });
     var roomID = newRoomRef.key;
     console.log(roomID)
@@ -155,6 +163,7 @@ table, th, td {
       map_listener(current_room_id)
       data_listener(current_room_id)
       isActive_listener(current_room_id)
+      who_won_listener(current_room_id)
     // }
   }
 
@@ -175,6 +184,12 @@ table, th, td {
   function update_isActive(isActive) {
     const updates = {}
     updates['/rooms/' + current_room_id + '/isActive' ] = isActive
+    update(ref(db), updates)
+  }
+
+  function update_who_won(who_won) {
+    const updates = {}
+    updates['/rooms/' + current_room_id + '/who_won' ] = who_won
     update(ref(db), updates)
   }
 
@@ -270,9 +285,11 @@ function eraseCookie(name) {
       }
       if(w1 == 3 || w1_ == 3) {
         alert('Player 1 won!')
+        update_who_won(1)
       }
       else if(w2 == 3 || w2_ == 3) {
         alert('Player 2 won!')
+        update_who_won(2)
       }
     }
 
@@ -285,8 +302,14 @@ function eraseCookie(name) {
           else w2_+=1
       }
     }
-    if(w1 == 3 || w1_ == 3) alert('Player 1 won!')
-    else if(w2 == 3 || w2_ == 3) alert('Player 2 won!')
+    if(w1 == 3 || w1_ == 3) {
+      alert('Player 1 won!')
+      update_who_won(1)
+    }
+    else if(w2 == 3 || w2_ == 3) {
+      alert('Player 2 won!')
+      update_who_won(2)
+    }
 
   }
 
