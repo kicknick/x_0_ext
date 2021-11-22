@@ -255,6 +255,35 @@ function eraseCookie(name) {
 
 
 //----------Map changed-----------
+
+  function check_if_win(map) {
+    let w1 = 0, w2 = 0
+    for(let i=0; i<3; i++) {
+      w1 = 0; w2 = 0
+      for(let j=0; j<3; j++) {
+        if(map[i][j] <= 3) w1+=1
+          else w2+=1
+      }
+      if(w1 == 3) {
+        alert('Player 1 won!')
+        break;
+      }
+      if(w2 == 3) {
+        alert('Player 2 won!')
+        break;
+      }
+    }
+
+    w1 = 0; w2 = 0
+    for(let i=0; i<3; i++) {
+        if(map[i][i] <= 3) w1+=1
+          else w2+=1
+    }
+    if(w1 == 3) alert('Player 1 won!')
+    if(w2 == 3) alert('Player 2 won!')
+
+  }
+
   function end_button_clicked() {
     // console.log(current_room_id)
     end_button.style.display = "none";
@@ -267,6 +296,7 @@ function eraseCookie(name) {
     updateMap(map)
     updateData(data)
     update_isActive(isActive)
+    check_if_win(map)
   }
 
 //------------Click on cell on map------
