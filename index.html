@@ -98,7 +98,7 @@ table, th, td {
     console.log(roomID)
     callback()
   }
-//createRoom('qqqqq', function() {}) 
+
 
   function create_room() {
     createRoom(document.getElementById("room_name_input").value, function() {
@@ -139,7 +139,7 @@ table, th, td {
 
 //---------Room selected--------
   function room_choosed(id) {
-    console.log(current_room_id, id, rooms[id])
+    // console.log(current_room_id, id, rooms[id])
     // if(rooms[id].filled == false) {
     //   const updates = {}
     //   updates['/rooms/' + id + '/filled' ] = true
@@ -247,7 +247,7 @@ function eraseCookie(name) {
     // });
 
     current_room_id = getCookie('current_room_id')
-    console.log(current_room_id)
+    // console.log(current_room_id)
 
     // map_listener(current_room_id)
     // data_listener(current_room_id)
@@ -257,35 +257,34 @@ function eraseCookie(name) {
 //----------Map changed-----------
 
   function check_if_win(map) {
-    let w1 = 0, w2 = 0,  w1_ = 0, w2_ = 0
+    let w1, w2, w1_, w2_
     for(let i=0; i<3; i++) {
       w1 = 0; w2 = 0; w1_ = 0; w2_ = 0
       for(let j=0; j<3; j++) {
-        if(map[i][j] <= 3) w1+=1
-          else w2+=1
-        if(map[j][i] <= 3) w1_+=1
-          else w2_+=1
+        if(map[i][j] != 0 && map[j][i] != 0) {
+          if(map[i][j] <= 3) w1+=1
+            else w2+=1
+          if(map[j][i] <= 3) w1_+=1
+            else w2_+=1
+          }
       }
-      console.log(w1, w2, w1_, w2_)
       if(w1 == 3 || w1_ == 3) {
         alert('Player 1 won!')
-        break;
       }
       else if(w2 == 3 || w2_ == 3) {
         alert('Player 2 won!')
-        break;
       }
     }
 
     w1 = 0; w2 = 0; w1_ = 0; w2_ = 0
     for(let i=0; i<3; i++) {
-        console.log(map[i][i])
+      if(map[i][i] != 0 && map[2-i][2-i] != 0) {
         if(map[i][i] <= 3) w1+=1
           else w2+=1
         if(map[2-i][2-i] <= 3) w1_+=1
           else w2_+=1
+      }
     }
-    console.log(w1, w2)
     if(w1 == 3 || w1_ == 3) alert('Player 1 won!')
     else if(w2 == 3 || w2_ == 3) alert('Player 2 won!')
 
@@ -311,8 +310,8 @@ function eraseCookie(name) {
 
   function clicked(x, y) {
     if(current_room_id != null) {
+      // console.log(cell, prev_cell)
     	prev_cell = cell
-    	// console.log(cell, prev_cell)
     	if(x<w && y<w) {
     		put_item(0, 0)
     	}
@@ -381,15 +380,19 @@ function eraseCookie(name) {
     	j_prev = j
 
     	for(k=k_s; k<3; k++) {
-    		if(data[isActive-1][k] > 0 && k+1>s) break;
+        if(data[isActive-1][k] > 0 && k+1 > s) break;
     	}
-    	k_s = k+1
-    	data_clone[isActive-1][k] -= 1
-    	map_clone[i][j] = (k_s) * isActive**2
-    	display_end_button(compare_arrays(map, map_clone))
+      if(data[isActive-1][k] > 0){
+      	k_s = k+1
+      	data_clone[isActive-1][k] -= 1
+        console.log('k_s', k_s)
+      	map_clone[i][j] = (k_s) * isActive**2
+        console.log(map_clone)
+      	display_end_button(compare_arrays(map, map_clone))
+        render_map(map_clone)
+        render_data(data_clone)
+      }
     }
-      render_map(map_clone)
-      render_data(data_clone)
   }
 
 
@@ -513,11 +516,8 @@ function eraseCookie(name) {
   initGame()
 	render_map(map)
   render_data(data)
-        // ctx.beginPath();
-        // ctx.moveTo(0, 0);
-        // ctx.lineTo(0, 100);
-        // ctx.stroke()
-        // ctx.closePath()
+
+// createRoom('xxxx', function() {}) 
 
 </script>
 
