@@ -16,7 +16,8 @@ body, canvas {
 	<canvas id='field'></canvas>
 	<br>
 	<button type="button" id = 'endButton'>step finished</button>
-  <br> <br>
+  <br> 
+  <hr>
   <div id='rooms'>
     <div>
       <input type="text" id="room_name_input" size="10"> 
@@ -341,7 +342,7 @@ function eraseCookie(name) {
   let prev_cell = [0, 0], cell = [0, 0], size = 0
 
   function clicked(x, y) {
-    console.log(x, y)
+    // console.log(x, y)
     if(current_room_id != null) {
       // console.log(cell, prev_cell)
     	prev_cell = cell
@@ -401,17 +402,17 @@ function eraseCookie(name) {
   	if(s > 3) {
   		s = s / 4
   	}
-  	if(s < 3) {
+  	// if(s < 3) {
   		data_clone = JSON.parse(JSON.stringify(data))
     	map_clone = JSON.parse(JSON.stringify(map))
-    	if(i != i_prev || j != j_prev || k_s >= 3) {
+    	if(i != i_prev || j != j_prev || k_s > 2) {
     		k_s = 0
     	}
 
     	// console.log(i, j, i_prev, j_prev, s, k_s)
     	i_prev = i
     	j_prev = j
-
+      // find circle of appropriate size
     	for(k=k_s; k<3; k++) {
         if(data[isActive-1][k] > 0 && k+1 > s) break;
     	}
@@ -419,13 +420,13 @@ function eraseCookie(name) {
       	k_s = k+1
       	data_clone[isActive-1][k] -= 1
         // console.log('k_s', k_s)
-      	map_clone[i][j] = (k_s) * isActive**2
+      	map_clone[i][j] = k_s * isActive**2
         console.log(map_clone)
       	display_end_button(compare_arrays(map, map_clone))
         render_map(map_clone)
         render_data(data_clone)
       }
-    }
+    // }
   }
 
 
