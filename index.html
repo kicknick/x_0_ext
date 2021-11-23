@@ -4,6 +4,10 @@
 table, th, td {
   border:1px solid black;
 }
+body, canvas {
+    margin: 0;
+    padding: 0;
+}
 </style>
 <head>
 	<title></title>
@@ -337,6 +341,7 @@ function eraseCookie(name) {
   let prev_cell = [0, 0], cell = [0, 0], size = 0
 
   function clicked(x, y) {
+    console.log(x, y)
     if(current_room_id != null) {
       // console.log(cell, prev_cell)
     	prev_cell = cell
