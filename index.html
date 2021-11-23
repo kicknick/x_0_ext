@@ -4,9 +4,13 @@
 table, th, td {
   border:1px solid black;
 }
-body, canvas {
+body, div, canvas {
     margin: 0;
     padding: 0;
+}
+#rooms {
+/*  border: 2px solid;
+  width: fit-content;*/
 }
 </style>
 <head>
@@ -15,10 +19,11 @@ body, canvas {
 <body>
 	<canvas id='field'></canvas>
 	<br>
-	<button type="button" id = 'endButton'>step finished</button>
+	<button type="button" id = 'endButton'><h3>step finished</h3></button>
   <br> 
-  <hr>
+<!--   <hr> -->
   <div id='rooms'>
+    <h3>Rooms</h3>
     <div>
       <input type="text" id="room_name_input" size="10"> 
       <button id='create_room'>create room</button>
@@ -56,12 +61,10 @@ body, canvas {
   const db = getDatabase(app);
   const roomListRef = ref(db, 'rooms');
 
-  let rooms
 //------------Rooms updated listener--------
   onValue(roomListRef, (snapshot) => {
-    const data = snapshot.val();
-    rooms = data
-    showRoomList(data)
+    const rooms = snapshot.val();
+    showRoomList(rooms)
   });
 
 //------------Map, Data, isAcive updated listener----------
@@ -102,18 +105,20 @@ body, canvas {
 
 //-------Create room-----------
   function createRoom(name, callback) {
-    const newRoomRef = push(roomListRef);
-    set(newRoomRef, {
-      name: name,
-      map: map_default,
-      data: data_default,
-      filled: false,
-      isActive: 1,
-      who_won: 0
-    });
-    var roomID = newRoomRef.key;
-    console.log(roomID)
-    callback()
+    if(name != '') {
+      const newRoomRef = push(roomListRef);
+      set(newRoomRef, {
+        name: name,
+        map: map_default,
+        data: data_default,
+        filled: false,
+        isActive: 1,
+        who_won: 0
+      });
+      var roomID = newRoomRef.key;
+      console.log(roomID)
+      callback()
+    }
   }
 
 
@@ -126,7 +131,7 @@ body, canvas {
 
   function showRoomList(list) {
     let list_of_rooms = document.getElementById('list_of_rooms')
-    list_of_rooms.innerHTML = '<tr><th>Rooms</th></tr>';
+    list_of_rooms.innerHTML = '';
       for(let i in list) {
         let td = document.createElement('td')
         td.innerText = list[i].name //+ (list[i].filled ? " (filled)" : "")
@@ -281,7 +286,7 @@ function eraseCookie(name) {
 
 //----------Map changed-----------
 
-  function check_if_win(map) {
+  function check_if_win() {
     let w1, w2, w1_, w2_
     for(let i=0; i<3; i++) {
       w1 = 0; w2 = 0; w1_ = 0; w2_ = 0
@@ -303,17 +308,19 @@ function eraseCookie(name) {
       }
     }
 
+    //diagonal cases
     w1 = 0; w2 = 0; w1_ = 0; w2_ = 0
     for(let i=0; i<3; i++) {
       if(map[i][i] != 0){
         if(map[i][i] <= 3) w1+=1
           else w2+=1
         }
-      if(map[2-i][2-i] != 0) {
-        if(map[2-i][2-i] <= 3) w1_+=1
+      if(map[i][2-i] != 0) {
+        if(map[i][2-i] <= 3) w1_+=1
           else w2_+=1
         }
       }
+    console.log(w1, w2, w1_, w2_)
     if(w1 == 3 || w1_ == 3) {
       update_who_won(1)
     }
@@ -335,7 +342,7 @@ function eraseCookie(name) {
     updateMap(map)
     updateData(data)
     update_isActive(isActive)
-    check_if_win(map)
+    check_if_win()
   }
 
 //------------Click on cell on map------
@@ -402,31 +409,29 @@ function eraseCookie(name) {
   	if(s > 3) {
   		s = s / 4
   	}
-  	// if(s < 3) {
-  		data_clone = JSON.parse(JSON.stringify(data))
-    	map_clone = JSON.parse(JSON.stringify(map))
-    	if(i != i_prev || j != j_prev || k_s > 2) {
-    		k_s = 0
-    	}
+		data_clone = JSON.parse(JSON.stringify(data))
+  	map_clone = JSON.parse(JSON.stringify(map))
+  	if(i != i_prev || j != j_prev || k_s > 2) {
+  		k_s = 0
+  	}
 
-    	// console.log(i, j, i_prev, j_prev, s, k_s)
-    	i_prev = i
-    	j_prev = j
-      // find circle of appropriate size
-    	for(k=k_s; k<3; k++) {
-        if(data[isActive-1][k] > 0 && k+1 > s) break;
-    	}
-      if(data[isActive-1][k] > 0) {
-      	k_s = k+1
-      	data_clone[isActive-1][k] -= 1
-        // console.log('k_s', k_s)
-      	map_clone[i][j] = k_s * isActive**2
-        console.log(map_clone)
-      	display_end_button(compare_arrays(map, map_clone))
-        render_map(map_clone)
-        render_data(data_clone)
-      }
-    // }
+  	// console.log(i, j, i_prev, j_prev, s, k_s)
+  	i_prev = i
+  	j_prev = j
+    // find circle of appropriate size
+  	for(k=k_s; k<3; k++) {
+      if(data[isActive-1][k] > 0 && k+1 > s) break;
+  	}
+    if(data[isActive-1][k] > 0) {
+    	k_s = k+1
+    	data_clone[isActive-1][k] -= 1
+      // console.log('k_s', k_s)
+    	map_clone[i][j] = k_s * isActive**2
+      // console.log(map_clone)
+    	display_end_button(compare_arrays(map, map_clone))
+      render_map(map_clone)
+      render_data(data_clone)
+    }
   }
 
 
