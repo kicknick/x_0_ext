@@ -72,9 +72,10 @@ body, div, canvas {
   const db = getDatabase(app);
   const roomListRef = ref(db, 'rooms');
 
+  let rooms
 //------------Rooms updated listener--------
   onValue(roomListRef, (snapshot) => {
-    const rooms = snapshot.val();
+    rooms = snapshot.val();
     showRoomList(rooms)
   });
 
@@ -153,7 +154,7 @@ body, div, canvas {
         td.innerText = list[i].name //+ (list[i].filled ? " (filled)" : "")
         // console.log(i, current_room_id, i == current_room_id, ' list[i] == current_room_id')
         td.style.fontWeight = i == current_room_id ? "bold" : "normal"
-        td.style.textDecoration = list[i].filled ? "line-through" : "none"
+        // td.style.textDecoration = list[i].filled ? "line-through" : "none"
         //list[i].filled ? td.setAttribute("style", 'text-decoration: line-through') : td.setAttribute("style", 'text-decoration: none')
         td.setAttribute('id', i)
         td.addEventListener('click', function(){
@@ -161,8 +162,8 @@ body, div, canvas {
         });
         let tr = document.createElement('tr')
         tr.setAttribute("style", 'cursor: pointer');
-        tr.setAttribute("onmouseover", "this.style.textDecoration='underline';")
-        tr.setAttribute("onmouseout", "this.style.textDecoration='none';")
+        // tr.setAttribute("onmouseover", "this.style.textDecoration='underline';")
+        // tr.setAttribute("onmouseout", "this.style.textDecoration='none';")
         tr.appendChild(td)
         list_of_rooms.appendChild(tr)
       }
@@ -187,8 +188,9 @@ body, div, canvas {
       //   update(ref(db), updates)
       //   document.getElementById(current_room_id).style.fontWeight = '';
       // }
-      document.getElementById(id).style.fontWeight = 'bold';
+      //document.getElementById(id).style.fontWeight = 'bold';
       current_room_id = id
+      showRoomList(rooms)
       setCookie('current_room_id', current_room_id, 999)
       map_listener(current_room_id)
       data_listener(current_room_id)
@@ -520,8 +522,8 @@ function eraseCookie(name) {
 			p = data[1]
 		}
 
-		// ctx.font = '48px serif';
-		// ctx.fillText(text, 250, 0+h);
+		// ctx.font = '48px serif solid';
+		// ctx.fillText("P", 250, 0+h);
 
 
 		for(let i = 0; i<p[0]; i++) {
@@ -545,10 +547,10 @@ function eraseCookie(name) {
     ctx.beginPath()
 
     if (isActive == 1) {
-      ctx.rect(220, 0, 110, 100);
+      ctx.rect(220, 0, 100, 100);
     }
     else {
-      ctx.rect(220, 100, 110, 100);
+      ctx.rect(220, 100, 100, 100);
     }
     ctx.stroke();
     ctx.closePath()
