@@ -1,38 +1,44 @@
 <!DOCTYPE html>
 <html>
 <style>
-table, th, td {
+td {
   border:1px solid black;
 }
 body, div, canvas {
     margin: 0;
     padding: 0;
+    position: absolute;
+    position: relative;
+/*    margin-left: auto;
+    margin-right: auto;*/
 }
 #rooms {
-/*  border: 2px solid;
-  width: fit-content;*/
+  border: 2px solid;
+  width: fit-content;
 }
 #endButton {
-  padding: 10px;
+  margin-left: 65px
 }
+
 table {
 /*  font-size: 1em;*/
 }
 </style>
 <head>
-	<title></title>
+    <meta charset="UTF-8" />
+  <META name="viewport" content="user-scalable=no">
+	<title>x_0_ext</title>
 </head>
 <body>
 	<canvas id='field'></canvas>
 	<br>
-	<button type="button" id = 'endButton'><b>step finished</b></button>
-  <br> 
-<!--   <hr> -->
+	<button type="button" id = 'endButton'><b>Finish step</b></button>
+  <br>
   <div id='rooms'>
     <h3>Rooms</h3>
     <div>
-      <input type="text" id="room_name_input" size="10"> 
-      <button id='create_room'>create room</button>
+      <input type="text" id="room_name_input" size="8"> 
+      <button id='create_room'>Create room</button>
     </div>
     <table id='list_of_rooms'>
     </table>
@@ -523,11 +529,11 @@ function eraseCookie(name) {
 			draw_circle(250+i*10, 10+h, 5, c)
 		}
 		for(let i = 0; i<p[1]; i++) {
-      draw_circle(250+i*20, 35+h, 10, c)
+      draw_circle(250+i*25, 35+h, 12, c)
 		}
 
 		for(let i = 0; i<p[2]; i++) {
-      draw_circle(250+i*30, 70+h, 15, c)
+      draw_circle(250+i*30, 70+h, 18, c)
 		}
 	}
 
