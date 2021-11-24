@@ -220,8 +220,8 @@ h3 {
       //   document.getElementById(current_room_id).style.fontWeight = '';
       // }
       //document.getElementById(id).style.fontWeight = 'bold';
-      if(rooms[id].p2_id == 0 || rooms[id].p1_id == user_id || rooms[id].p2_id == user_id) {
-        if(rooms[id].p2_id == 0) {
+      if(rooms[id].p2_id == 0 && rooms[id].p1_id!=user_id || rooms[id].p1_id == user_id || rooms[id].p2_id == user_id) {
+        if(rooms[id].p2_id == 0 && rooms[id].p1_id!=user_id) {
           const updates = {}
           updates['/rooms/' + id + '/p2_id' ] = user_id
           update(ref(db), updates)
