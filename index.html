@@ -3,14 +3,12 @@
 <style>
 td {
   border:1px solid black;
+  padding: 8px
 }
 body, div, canvas {
     margin: 0;
     padding: 0;
-/*    position: absolute;
-    position: relative;
-    margin-left: auto;
-    margin-right: auto;*/
+    font-family: tahoma;
 }
 #rooms {
   border: 2px solid gray;
@@ -20,8 +18,8 @@ body, div, canvas {
   margin-left: 65px
 }
 
-table {
-/*  font-size: 1em;*/
+#rooms_text {
+  text-align: center;
 }
 </style>
 <head>
@@ -35,11 +33,12 @@ table {
 	<button type="button" id = 'endButton'><b>Finish step</b></button>
   <br>
   <div id='rooms'>
-    <h3>Rooms</h3>
+    <h3 id='rooms_text'>Rooms</h3>
     <div>
       <input type="text" id="room_name_input" size="8"> 
-      <button id='create_room'>Create room</button>
+      <button id='create_room'><b>Create room</b></button>
     </div>
+    <br>
     <table id='list_of_rooms'>
     </table>
   </div>
