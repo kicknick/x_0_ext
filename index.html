@@ -104,6 +104,11 @@ table {
       const won = snapshot.val()
       if(won > 0) {
         alert('Player ' + won + ' won!')
+        //clear field
+        updateMap(map_default)
+        updateData(data_default)
+        update_isActive(1)
+        update_who_won(0)
       }
     });
   }
