@@ -101,6 +101,7 @@ body, div, canvas {
     onValue(isActiveRef, (snapshot) => {
       isActive = snapshot.val();
       render_data(data)
+      sound.play()
     });
   }
 
@@ -273,6 +274,8 @@ function eraseCookie(name) {
 	,k_s, k
 	,end_button = document.getElementById('endButton')
   ,current_room_id = null
+  ,mp3_url = 'https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3'
+  ,sound
 
 		//1, 2, 3 = player1
 		//4, 8, 12 = player2
@@ -296,6 +299,7 @@ function eraseCookie(name) {
     document.getElementById('create_room').addEventListener("click", e => {
       create_room()
     });
+    sound = new Audio(mp3_url)
 
     // current_room_id = getCookie('current_room_id')
     // console.log(current_room_id)
