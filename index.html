@@ -252,8 +252,8 @@ function eraseCookie(name) {
 }
 
 //---------------Main block------------------
-		//var minSide = Math.min(document.documentElement.clientHeight, width=document.documentElement.clientWidth),
-	var minSide = 500,
+  var minSide = Math.min(document.documentElement.clientHeight, document.documentElement.clientWidth),
+	// var minSide = 500,
 	w = 70
 	,canvas, ctx
 
@@ -336,7 +336,7 @@ function eraseCookie(name) {
           else w2_+=1
         }
       }
-    console.log(w1, w2, w1_, w2_)
+    // console.log(w1, w2, w1_, w2_)
     if(w1 == 3 || w1_ == 3) {
       update_who_won(1)
     }
@@ -545,10 +545,10 @@ function eraseCookie(name) {
     ctx.beginPath()
 
     if (isActive == 1) {
-      ctx.rect(220, 0, 140, 100);
+      ctx.rect(220, 0, 110, 100);
     }
     else {
-      ctx.rect(220, 100, 140, 100);
+      ctx.rect(220, 100, 110, 100);
     }
     ctx.stroke();
     ctx.closePath()
