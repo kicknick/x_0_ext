@@ -186,7 +186,7 @@ h3 {
         // console.log(i, current_room_id, i == current_room_id, ' list[i] == current_room_id')
         td.style.fontWeight = i == current_room_id ? "bold" : "normal"
         console.log(user_id)
-        list[i].p2_id!=user_id && list[i].p1_id!=user_id ? td.setAttribute("style", 'text-decoration: line-through') : td.setAttribute("style", 'text-decoration: none')
+        list[i].p2_id!=user_id && list[i].p1_id!=user_id && list[i].p2_id!=0 ? td.setAttribute("style", 'text-decoration: line-through') : td.setAttribute("style", 'text-decoration: none')
         td.setAttribute('id', i)
         td.addEventListener('click', function(){
           room_choosed(this.id)
