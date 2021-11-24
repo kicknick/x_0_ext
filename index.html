@@ -10,16 +10,33 @@ body, div, canvas {
     padding: 0;
     font-family: tahoma;
 }
+#main {
+  width: fit-content;
+}
 #rooms {
   border: 2px solid gray;
   width: fit-content;
+  float: left; 
+}
+#score {
+  border: 2px solid gray;
+  width: fit-content;
+  float: left; 
 }
 #endButton {
   margin-left: 65px
 }
 
-#rooms_text {
+h3 {
   text-align: center;
+}
+#player_num {
+  color: red;
+  height: 20px;
+  margin: 0;
+  margin-bottom: 20px;
+  padding: 0;
+  padding-left: 210px;
 }
 </style>
 <head>
@@ -28,19 +45,29 @@ body, div, canvas {
 	<title>x_0_ext</title>
 </head>
 <body>
-	<canvas id='field'></canvas>
-	<br>
-	<button type="button" id = 'endButton'><b>Finish step</b></button>
-  <br>
-  <div id='rooms'>
-    <h3 id='rooms_text'>Rooms</h3>
-    <div>
-      <input type="text" id="room_name_input" size="8"> 
-      <button id='create_room'><b>Create room</b></button>
-    </div>
+  <div id='main'>
+<!--     <p id='player_num'>You are P1</p>
+ -->  	<canvas id='field'></canvas>
+  	<br>
+  	<button type="button" id = 'endButton'><b>Finish step</b></button>
     <br>
-    <table id='list_of_rooms'>
-    </table>
+    <div style="overflow: hidden;">
+
+      <div id='rooms'>
+        <h3 id='rooms_text'>Rooms</h3>
+        <div>
+          <input type="text" id="room_name_input" size="8"> 
+          <button id='create_room'><b>Create room</b></button>
+        </div>
+        <br>
+        <table id='list_of_rooms'>
+        </table>
+      </div>
+
+  <!--     <div id='score'>
+        <h3>Score</h3>
+      </div> -->
+    </div>
   </div>
 
 <script type="module">
@@ -129,9 +156,12 @@ body, div, canvas {
         name: name,
         map: map_default,
         data: data_default,
-        filled: false,
         isActive: 1,
-        who_won: 0
+        who_won: 0,
+        p1_id: user_id,
+        p2_id: 0,
+        p1_score: 0,
+        p2_score:0
       });
       var roomID = newRoomRef.key;
       console.log(roomID)
@@ -155,8 +185,8 @@ body, div, canvas {
         td.innerText = list[i].name //+ (list[i].filled ? " (filled)" : "")
         // console.log(i, current_room_id, i == current_room_id, ' list[i] == current_room_id')
         td.style.fontWeight = i == current_room_id ? "bold" : "normal"
-        // td.style.textDecoration = list[i].filled ? "line-through" : "none"
-        //list[i].filled ? td.setAttribute("style", 'text-decoration: line-through') : td.setAttribute("style", 'text-decoration: none')
+        console.log(user_id)
+        list[i].p2_id!=user_id && list[i].p1_id!=user_id ? td.setAttribute("style", 'text-decoration: line-through') : td.setAttribute("style", 'text-decoration: none')
         td.setAttribute('id', i)
         td.addEventListener('click', function(){
           room_choosed(this.id)
@@ -190,13 +220,20 @@ body, div, canvas {
       //   document.getElementById(current_room_id).style.fontWeight = '';
       // }
       //document.getElementById(id).style.fontWeight = 'bold';
-      current_room_id = id
-      showRoomList(rooms)
-      setCookie('current_room_id', current_room_id, 999)
-      map_listener(current_room_id)
-      data_listener(current_room_id)
-      isActive_listener(current_room_id)
-      who_won_listener(current_room_id)
+      if(rooms[id].p2_id == 0 || rooms[id].p1_id == user_id || rooms[id].p2_id == user_id) {
+        if(rooms[id].p2_id == 0) {
+          const updates = {}
+          updates['/rooms/' + id + '/p2_id' ] = user_id
+          update(ref(db), updates)
+        }
+        current_room_id = id
+        showRoomList(rooms)
+        setCookie('current_room_id', current_room_id, 999)
+        map_listener(current_room_id)
+        data_listener(current_room_id)
+        isActive_listener(current_room_id)
+        who_won_listener(current_room_id)
+      }
     // }
   }
 
@@ -221,7 +258,7 @@ body, div, canvas {
   }
 
   function update_who_won(who_won) {
-    console.log('won:', who_won)
+    //console.log('won:', who_won)
     const updates = {}
     updates['/rooms/' + current_room_id + '/who_won' ] = who_won
     update(ref(db), updates)
@@ -276,10 +313,15 @@ function eraseCookie(name) {
   ,current_room_id = null
   ,mp3_url = 'https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3'
   ,sound
+  ,user_id
 
 		//1, 2, 3 = player1
 		//4, 8, 12 = player2
 
+
+  function generate_user_id() {
+    return Date.now()
+  }
 
   function initGame() {
     canvas = document.getElementById('field')
@@ -300,6 +342,13 @@ function eraseCookie(name) {
       create_room()
     });
     sound = new Audio(mp3_url)
+
+    //randomly decide who is P1 and who is P2
+    user_id = getCookie('user_id')
+    if(user_id == null) {
+      user_id = generate_user_id()
+      setCookie('user_id', user_id, 999)
+    }
 
     // current_room_id = getCookie('current_room_id')
     // console.log(current_room_id)
@@ -526,8 +575,13 @@ function eraseCookie(name) {
 			p = data[1]
 		}
 
-		// ctx.font = '48px serif solid';
-		// ctx.fillText("P", 250, 0+h);
+    ctx.font = "22px Comic Sans MS";
+    ctx.fillStyle = "black";
+		ctx.fillText("P"+player, 270, 83+h);
+
+    ctx.font = "15px Comic Sans MS";
+    ctx.fillStyle = "black";
+    ctx.fillText("0", 300, 83+h);
 
 
 		for(let i = 0; i<p[0]; i++) {
@@ -541,7 +595,6 @@ function eraseCookie(name) {
       draw_circle(250+i*30, 70+h, 18, c)
 		}
 	}
-
 
 
 
