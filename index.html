@@ -103,9 +103,14 @@ h3 {
   let rooms
 //------------Rooms updated listener--------
   onValue(roomListRef, (snapshot) => {
-    rooms = snapshot.val();
+    rooms = snapshot.val()
     showRoomList(rooms)
     console.log(rooms)
+    // if(current_room_id != null) {
+    //   render_data(data)
+    //   const current_room = rooms[current_room_id]
+    //   render_score([current_room.p1_score, current_room.p2_score])
+    // }
   });
 
 //------------Map, Data, isAcive updated listener----------
@@ -121,7 +126,7 @@ h3 {
     const dataRef = ref(db, 'rooms/'+ current_room_id + '/data');
     onValue(dataRef, (snapshot) => {
       data = snapshot.val();
-      render_data(data)
+      render_data_score(data, score)
     });
   }
 
@@ -129,7 +134,7 @@ h3 {
     const isActiveRef = ref(db, 'rooms/'+ current_room_id + '/isActive');
     onValue(isActiveRef, (snapshot) => {
       isActive = snapshot.val();
-      render_data(data)
+      render_data_score(data, score)
       sound.play()
     });
   }
@@ -144,6 +149,25 @@ h3 {
       }
     });
   }
+
+  function p1_score_listener(current_room_id) {
+    const s = ref(db, 'rooms/'+ current_room_id + '/p1_score');
+    onValue(s, (snapshot) => {
+      score[0] = snapshot.val()
+      console.log('score', score)
+      render_data_score(data, score)
+    });
+  }
+
+  function p2_score_listener(current_room_id) {
+    const s = ref(db, 'rooms/'+ current_room_id + '/p2_score');
+    onValue(s, (snapshot) => {
+      score[1] = snapshot.val()
+      console.log('score', score)
+      render_data_score(data, score)
+    });
+  }
+
 
 
 //-------Create room-----------
@@ -189,10 +213,11 @@ h3 {
     list_of_rooms.innerHTML = '';
       for(let i in list) {
         let td = document.createElement('td')
+        // console.log(i, current_room_id)
         td.innerText = list[i].name //+ (list[i].filled ? " (filled)" : "")
         // console.log(i, current_room_id, i == current_room_id, ' list[i] == current_room_id')
-        td.style.fontWeight = i == current_room_id ? "bold" : "normal"
         list[i].p2_id!=user_id && list[i].p1_id!=user_id && list[i].p2_id!=0 ? td.setAttribute("style", 'text-decoration: line-through') : td.setAttribute("style", 'text-decoration: none')
+        td.style.fontWeight = i == current_room_id ? "bold" : "normal"
         td.setAttribute('id', i)
         td.addEventListener('click', function(){
           room_choosed(this.id)
@@ -229,6 +254,8 @@ h3 {
         data_listener(current_room_id)
         isActive_listener(current_room_id)
         who_won_listener(current_room_id)
+        p1_score_listener(current_room_id)
+        p2_score_listener(current_room_id)
         // room_listener(current_room_id)
         // console.log(rooms, current_room_id, rooms[current_room_id])
       }
@@ -260,7 +287,7 @@ h3 {
     updates['/rooms/' + current_room_id + '/p' + p + '_score' ] = s
     update(ref(db), updates)
     .then(() => {
-      render_data(data)
+      
     })
   }
 
@@ -342,7 +369,7 @@ function eraseCookie(name) {
   ,mp3_url = 'https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3'
   ,sound
   ,user_id
-  ,score
+  ,score = [0, 0]
 
 		//1, 2, 3 = player1
 		//4, 8, 12 = player2
@@ -553,7 +580,7 @@ function eraseCookie(name) {
       // console.log(map_clone)
     	display_end_button(compare_arrays(map, map_clone))
       render_map(map_clone)
-      render_data(data_clone)
+      render_data_score(data_clone, score)
     }
   }
 
@@ -668,7 +695,7 @@ function eraseCookie(name) {
   }
 
 
-  function render_data(data) {
+  function render_data_score(data, score) {
     ctx.clearRect(w*3, 0, minSide, w*3)
 
     render_player(1, data)
@@ -676,9 +703,14 @@ function eraseCookie(name) {
 
     render_isActive()
 
-    render_score_player(1, rooms[current_room_id].p1_score) 
-    render_score_player(2, rooms[current_room_id].p2_score)
+    render_score_player(1, score[0]) 
+    render_score_player(2, score[1])
   }
+
+  // function render_score(score) {
+  //   render_score_player(1, score[0]) 
+  //   render_score_player(2, score[1])
+  // }
 
 //-----------------------------------
 
