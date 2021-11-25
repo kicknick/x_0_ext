@@ -104,6 +104,7 @@ h3 {
   onValue(roomListRef, (snapshot) => {
     rooms = snapshot.val();
     showRoomList(rooms)
+    console.log(rooms)
   });
 
 //------------Map, Data, isAcive updated listener----------
@@ -144,22 +145,6 @@ h3 {
   }
 
 
-  // function room_listener(current_room_id) {
-  //   const r = ref(db, 'rooms/'+ current_room_id);
-  //   onValue(r, (snapshot) => {
-  //     const res = snapshot.val()
-  //     map = r.map
-  //     render_map(map)
-  //     data = r.data
-  //     render_data(data)
-  //     isActive = r.isActive
-  //     render_data(data)
-  //     sound.play()
-  //   });
-  // }
-
-
-
 //-------Create room-----------
   function createRoom(name, callback) {
     if(name != '') {
@@ -198,7 +183,7 @@ h3 {
 
 
   function showRoomList(list) {
-    console.log(user_id)
+    // console.log(user_id)
     let list_of_rooms = document.getElementById('list_of_rooms')
     list_of_rooms.innerHTML = '';
       for(let i in list) {
@@ -230,17 +215,6 @@ h3 {
 //---------Room selected--------
   function room_choosed(id) {
     console.log(rooms, current_room_id)
-    // console.log(current_room_id, id, rooms[id])
-    // if(rooms[id].filled == false) {
-    //   const updates = {}
-    //   updates['/rooms/' + id + '/filled' ] = true
-    //   update(ref(db), updates)
-      // if(current_room_id != null) {
-      //   updates['/rooms/' + current_room_id + '/filled' ] = false
-      //   update(ref(db), updates)
-      //   document.getElementById(current_room_id).style.fontWeight = '';
-      // }
-      //document.getElementById(id).style.fontWeight = 'bold';
       if(rooms[id].p2_id == 0 && rooms[id].p1_id!=user_id || rooms[id].p1_id == user_id || rooms[id].p2_id == user_id) {
         if(rooms[id].p2_id == 0 && rooms[id].p1_id!=user_id) {
           const updates = {}
@@ -280,16 +254,35 @@ h3 {
     update(ref(db), updates)
   }
 
+  function update_score(p, s) {
+    const updates = {}
+    updates['/rooms/' + current_room_id + '/p' + p + '_score' ] = s
+    update(ref(db), updates)
+    .then(() => {
+      render_data(data)
+    })
+  }
+
   function update_who_won(w) {
-    //console.log('won:', who_won)
     const updates = {}
     updates['/rooms/' + current_room_id + '/who_won' ] = w
     update(ref(db), updates)
-    updateMap(map_default)
-    updateData(data_default)
-    if(w == 1) update_isActive(2)
-      else update_isActive(1)
-    // update_who_won(0)
+    .then(() => {
+      updateMap(map_default)
+      updateData(data_default)
+
+      updates['/rooms/' + current_room_id + '/who_won' ] = 0
+      update(ref(db), updates)
+
+      if(w == 1) {
+        update_isActive(2)
+        update_score(1, rooms[current_room_id].p1_score+1)
+      }
+      else {
+        update_isActive(1)
+        update_score(2, rooms[current_room_id].p2_score+1)
+      }
+    })
   }
 
   function increment_score() {
@@ -443,9 +436,6 @@ function eraseCookie(name) {
   	else isActive = 1
   	map = JSON.parse(JSON.stringify(map_clone))
   	data = JSON.parse(JSON.stringify(data_clone))
-    // console.log(map)
-    // render_map(map)
-    // render_data(data)
     updateMap(map)
     updateData(data)
     update_isActive(isActive)
@@ -623,29 +613,18 @@ function eraseCookie(name) {
   }
 
 
-	function build_player(player, data) {
-		let c, h, p
+	function render_player(player, data) {
+		let c, h, p, s
 		if (player == 1) {
 			c = 'red'
 			h = 0
 			p = data[0]
-      // s = score[0]
 		}
 		else {
 			c = 'blue'
 			h = 100
 			p = data[1]
-      // s = score[1]
 		}
-
-    ctx.font = "22px Comic Sans MS";
-    ctx.fillStyle = "black";
-		ctx.fillText("P"+player, 270, 83+h);
-
-    ctx.font = "15px Comic Sans MS";
-    ctx.fillStyle = "black";
-    ctx.fillText("0", 300, 83+h);
-
 
 		for(let i = 0; i<p[0]; i++) {
 			draw_circle(250+i*10, 10+h, 5, c)
@@ -660,10 +639,7 @@ function eraseCookie(name) {
 	}
 
 
-
-  function render_data(data) {
-    ctx.clearRect(w*3, 0, minSide, w*3)
-    //border around current player
+  function render_isActive() {
     ctx.beginPath()
 
     if (isActive == 1) {
@@ -674,10 +650,35 @@ function eraseCookie(name) {
     }
     ctx.stroke();
     ctx.closePath()
-
-    build_player(1, data)
-    build_player(2, data)
   }
+
+
+  function render_score_player(player, score) {
+    let h = 0
+    if(player == 2) h = 100
+
+    ctx.font = "22px Comic Sans MS";
+    ctx.fillStyle = "black";
+    ctx.fillText("P"+player, 270, 83+h);
+
+    ctx.font = "15px Comic Sans MS";
+    ctx.fillStyle = "black";
+    ctx.fillText(score, 300, 83+h);
+  }
+
+
+  function render_data(data) {
+    ctx.clearRect(w*3, 0, minSide, w*3)
+
+    render_player(1, data)
+    render_player(2, data)
+
+    render_isActive()
+
+    render_score_player(1, rooms[current_room_id].p1_score) 
+    render_score_player(2, rooms[current_room_id].p2_score)
+  }
+
 //-----------------------------------
 
 
@@ -692,7 +693,6 @@ function eraseCookie(name) {
 
   initGame()
 	render_map(map)
-  // render_data(data)
 
 //createRoom('aaaa', function() {}) 
 
