@@ -297,11 +297,11 @@ h3 {
 
       if(w == 1) {
         update_isActive(2)
-        update_score(rooms[current_room_id].score[0]+1, rooms[current_room_id].score[1])
+        update_score([rooms[current_room_id].score[0]+1, rooms[current_room_id].score[1]])
       }
       else {
         update_isActive(1)
-        update_score(rooms[current_room_id].score[0], rooms[current_room_id].score[1]+1)
+        update_score([rooms[current_room_id].score[0], rooms[current_room_id].score[1]+1])
       }
     })
   }
