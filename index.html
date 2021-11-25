@@ -117,7 +117,7 @@ h3 {
   function map_listener(current_room_id) {
     const mapRef = ref(db, 'rooms/'+ current_room_id + '/map');
     onValue(mapRef, (snapshot) => {
-      map = snapshot.val();
+      map = JSON.parse(snapshot.val());
       render_map(map)
     });
   }
@@ -125,7 +125,7 @@ h3 {
   function data_listener(current_room_id) {
     const dataRef = ref(db, 'rooms/'+ current_room_id + '/data');
     onValue(dataRef, (snapshot) => {
-      data = snapshot.val();
+      data = JSON.parse(snapshot.val());
       render_data_score(data, score)
     });
   }
@@ -176,8 +176,8 @@ h3 {
       let room_data = 
       {
         name: name,
-        map: map_default,
-        data: data_default,
+        map: JSON.stringify(map_default),
+        data: JSON.stringify(data_default),
         isActive: 1,
         who_won: 0,
         p1_id: user_id,
