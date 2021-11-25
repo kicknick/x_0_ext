@@ -125,6 +125,7 @@ h3 {
   function data_listener(current_room_id) {
     const dataRef = ref(db, 'rooms/'+ current_room_id + '/data');
     onValue(dataRef, (snapshot) => {
+      // console.log("sss", snapshot.val())
       data = JSON.parse(snapshot.val());
       render_data_score(data, score)
     });
@@ -296,8 +297,8 @@ h3 {
     updates['/rooms/' + current_room_id + '/who_won' ] = w
     update(ref(db), updates)
     .then(() => {
-      updateMap(map_default)
-      updateData(data_default)
+      updateMap(JSON.stringify(map_default))
+      updateData(JSON.stringify(data_default))
 
       updates['/rooms/' + current_room_id + '/who_won' ] = 0
       update(ref(db), updates)
@@ -464,8 +465,8 @@ function eraseCookie(name) {
   	else isActive = 1
   	map = JSON.parse(JSON.stringify(map_clone))
   	data = JSON.parse(JSON.stringify(data_clone))
-    updateMap(map)
-    updateData(data)
+    updateMap(JSON.stringify(map))
+    updateData(JSON.stringify(data))
     update_isActive(isActive)
     check_if_win()
   }
