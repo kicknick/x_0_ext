@@ -151,23 +151,15 @@ h3 {
     });
   }
 
-  function p1_score_listener(current_room_id) {
-    const s = ref(db, 'rooms/'+ current_room_id + '/p1_score');
+  function score_listener(current_room_id) {
+    const s = ref(db, 'rooms/'+ current_room_id + '/score');
     onValue(s, (snapshot) => {
-      score[0] = snapshot.val()
-      console.log('score', score)
+      score = JSON.parse(snapshot.val())
+      // console.log('score', score)
       render_data_score(data, score)
     });
   }
 
-  function p2_score_listener(current_room_id) {
-    const s = ref(db, 'rooms/'+ current_room_id + '/p2_score');
-    onValue(s, (snapshot) => {
-      score[1] = snapshot.val()
-      console.log('score', score)
-      render_data_score(data, score)
-    });
-  }
 
 
 
@@ -183,8 +175,7 @@ h3 {
         who_won: 0,
         p1_id: user_id,
         p2_id: 0,
-        p1_score: 0,
-        p2_score:0
+        score: JSON.stringify([0, 0])
       }
 
       const newRoomRef = push(roomListRef);
@@ -255,8 +246,9 @@ h3 {
         data_listener(current_room_id)
         isActive_listener(current_room_id)
         who_won_listener(current_room_id)
-        p1_score_listener(current_room_id)
-        p2_score_listener(current_room_id)
+        score_listener(current_room_id)
+        // p1_score_listener(current_room_id)
+        // p2_score_listener(current_room_id)
         // room_listener(current_room_id)
         // console.log(rooms, current_room_id, rooms[current_room_id])
       }
@@ -283,9 +275,9 @@ h3 {
     update(ref(db), updates)
   }
 
-  function update_score(p, s) {
+  function update_score(s) {
     const updates = {}
-    updates['/rooms/' + current_room_id + '/p' + p + '_score' ] = s
+    updates['/rooms/' + current_room_id + '/score' ] = JSON.stringify(s)
     update(ref(db), updates)
     .then(() => {
       
@@ -305,21 +297,15 @@ h3 {
 
       if(w == 1) {
         update_isActive(2)
-        update_score(1, rooms[current_room_id].p1_score+1)
+        update_score(rooms[current_room_id].score[0]+1, rooms[current_room_id].score[1])
       }
       else {
         update_isActive(1)
-        update_score(2, rooms[current_room_id].p2_score+1)
+        update_score(rooms[current_room_id].score[0], rooms[current_room_id].score[1]+1)
       }
     })
   }
 
-  function increment_score() {
-    const updates = {};
-    // const increment = FieldValue.increment(1);
-    // updates['/rooms/-MpJ-z5mlRkNoEEjSNfn'  + '/p1_score']  = FieldValue.increment(1);
-    // update(ref(db), updates)
-  }
 
 
 
@@ -708,10 +694,6 @@ function eraseCookie(name) {
     render_score_player(2, score[1])
   }
 
-  // function render_score(score) {
-  //   render_score_player(1, score[0]) 
-  //   render_score_player(2, score[1])
-  // }
 
 //-----------------------------------
 
