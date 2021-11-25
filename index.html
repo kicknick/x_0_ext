@@ -75,8 +75,8 @@ h3 {
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.5.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.5.0/firebase-analytics.js";
-  import { getDatabase, ref, set, onValue, child, get, push, onChildChanged, update} from "https://www.gstatic.com/firebasejs/9.5.0/firebase-database.js";
-  import { collection, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.5.0/firebase-firestore.js";
+  import { getDatabase, ref, set, onValue, child, get, push, onChildChanged, update } from "https://www.gstatic.com/firebasejs/9.5.0/firebase-database.js";
+  import { collection, doc, onSnapshot, FieldValue } from "https://www.gstatic.com/firebasejs/9.5.0/firebase-firestore.js";
   // TODO: Add SDKs for Firebase products that you want to use
   // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -136,23 +136,40 @@ h3 {
     const who_wonRef = ref(db, 'rooms/'+ current_room_id + '/who_won');
     onValue(who_wonRef, (snapshot) => {
       const won = snapshot.val()
+      console.log('won', won)
       if(won > 0) {
         alert('Player ' + won + ' won!')
         //clear field
-        updateMap(map_default)
-        updateData(data_default)
-        update_isActive(1)
-        update_who_won(0)
+        // updateMap(map_default)
+        // updateData(data_default)
+        // update_isActive(1)
+        // update_who_won(0)
       }
     });
   }
 
 
+  // function room_listener(current_room_id) {
+  //   const r = ref(db, 'rooms/'+ current_room_id);
+  //   onValue(r, (snapshot) => {
+  //     const res = snapshot.val()
+  //     map = r.map
+  //     render_map(map)
+  //     data = r.data
+  //     render_data(data)
+  //     isActive = r.isActive
+  //     render_data(data)
+  //     sound.play()
+  //   });
+  // }
+
+
+
 //-------Create room-----------
   function createRoom(name, callback) {
     if(name != '') {
-      const newRoomRef = push(roomListRef);
-      set(newRoomRef, {
+      let room_data = 
+      {
         name: name,
         map: map_default,
         data: data_default,
@@ -162,10 +179,18 @@ h3 {
         p2_id: 0,
         p1_score: 0,
         p2_score:0
+      }
+
+      const newRoomRef = push(roomListRef);
+      set(newRoomRef, room_data).then(() => {
+        var roomID = newRoomRef.key;
+        console.log(roomID)
+        callback()
+      })
+      .catch((error) => {
+        // The write failed...
       });
-      var roomID = newRoomRef.key;
-      console.log(roomID)
-      callback()
+
     }
   }
 
@@ -178,6 +203,7 @@ h3 {
 
 
   function showRoomList(list) {
+    console.log(user_id)
     let list_of_rooms = document.getElementById('list_of_rooms')
     list_of_rooms.innerHTML = '';
       for(let i in list) {
@@ -185,7 +211,6 @@ h3 {
         td.innerText = list[i].name //+ (list[i].filled ? " (filled)" : "")
         // console.log(i, current_room_id, i == current_room_id, ' list[i] == current_room_id')
         td.style.fontWeight = i == current_room_id ? "bold" : "normal"
-        console.log(user_id)
         list[i].p2_id!=user_id && list[i].p1_id!=user_id && list[i].p2_id!=0 ? td.setAttribute("style", 'text-decoration: line-through') : td.setAttribute("style", 'text-decoration: none')
         td.setAttribute('id', i)
         td.addEventListener('click', function(){
@@ -209,6 +234,7 @@ h3 {
 
 //---------Room selected--------
   function room_choosed(id) {
+    console.log(rooms, current_room_id)
     // console.log(current_room_id, id, rooms[id])
     // if(rooms[id].filled == false) {
     //   const updates = {}
@@ -233,6 +259,8 @@ h3 {
         data_listener(current_room_id)
         isActive_listener(current_room_id)
         who_won_listener(current_room_id)
+        // room_listener(current_room_id)
+        // console.log(rooms, current_room_id, rooms[current_room_id])
       }
     // }
   }
@@ -257,13 +285,26 @@ h3 {
     update(ref(db), updates)
   }
 
-  function update_who_won(who_won) {
+  function update_who_won(w) {
     //console.log('won:', who_won)
     const updates = {}
-    updates['/rooms/' + current_room_id + '/who_won' ] = who_won
+    updates['/rooms/' + current_room_id + '/who_won' ] = w
     update(ref(db), updates)
+    updateMap(map_default)
+    updateData(data_default)
+    if(w == 1) update_isActive(2)
+      else update_isActive(1)
+    update_who_won(0)
+
+
   }
 
+  function increment_score() {
+    const updates = {};
+    // const increment = FieldValue.increment(1);
+    // updates['/rooms/-MpJ-z5mlRkNoEEjSNfn'  + '/p1_score']  = FieldValue.increment(1);
+    // update(ref(db), updates)
+  }
 
 
 
@@ -314,6 +355,7 @@ function eraseCookie(name) {
   ,mp3_url = 'https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3'
   ,sound
   ,user_id
+  ,score
 
 		//1, 2, 3 = player1
 		//4, 8, 12 = player2
@@ -352,6 +394,7 @@ function eraseCookie(name) {
 
     // current_room_id = getCookie('current_room_id')
     // console.log(current_room_id)
+    // increment_score()
   }
 
 
@@ -416,41 +459,66 @@ function eraseCookie(name) {
     check_if_win()
   }
 
+  function array_to_object(arr, prefix) {
+    let h = arr.length
+    let w = arr[0].length
+    let c = 0
+    let res = {}
+    let key
+    for(let i=0; i<h; i++) {
+      for(let j=0; j<w; j++) {
+        key = prefix + '_'+ c.toString()
+        res[key] = arr[i][j]
+        c++
+      }
+    }
+    return res
+  }
+
+  function object_to_array(obj) {
+
+  }
+
+// console.log(data_default, array_to_object(data_default, 'data'))
+
 //------------Click on cell on map------
   let prev_cell = [0, 0], cell = [0, 0], size = 0
 
   function clicked(x, y) {
     // console.log(x, y)
     if(current_room_id != null) {
-      // console.log(cell, prev_cell)
-    	prev_cell = cell
-    	if(x<w && y<w) {
-    		put_item(0, 0)
-    	}
-    	if(x>w && x<w*2 && y<w) {
-    		put_item(0, 1)
-    	}
-    	if(x>w*2 && x<w*3 && y<w) {
-    		put_item(0, 2)
-    	}
-    	if(x<w && y>w && y<w*2) {
-    		put_item(1, 0)
-    	}
-    	if(x>w && x<w*2 && y>w && y<w*2) {
-    		put_item(1, 1)
-    	}
-    	if(x>w*2 && x<w*3 && y>w && y<w*2) {
-    		put_item(1, 2)
-    	}
-    	if(x<w && y>w*2 && y<w*3) {
-    		put_item(2, 0)
-    	}
-    	if(x>w && x<w*2 && y>w*2 && y<w*3) {
-    		put_item(2, 1)
-    	}
-    	if(x>w*2 && x<w*3 && y>w*2 && y<w*3) {
-    		put_item(2, 2)
-    	}
+      const r = rooms[current_room_id]
+      if(user_id == r.p1_id && isActive == 1 || user_id == r.p2_id && isActive == 2) {
+        // console.log(cell, prev_cell)
+      	prev_cell = cell
+      	if(x<w && y<w) {
+      		put_item(0, 0)
+      	}
+      	if(x>w && x<w*2 && y<w) {
+      		put_item(0, 1)
+      	}
+      	if(x>w*2 && x<w*3 && y<w) {
+      		put_item(0, 2)
+      	}
+      	if(x<w && y>w && y<w*2) {
+      		put_item(1, 0)
+      	}
+      	if(x>w && x<w*2 && y>w && y<w*2) {
+      		put_item(1, 1)
+      	}
+      	if(x>w*2 && x<w*3 && y>w && y<w*2) {
+      		put_item(1, 2)
+      	}
+      	if(x<w && y>w*2 && y<w*3) {
+      		put_item(2, 0)
+      	}
+      	if(x>w && x<w*2 && y>w*2 && y<w*3) {
+      		put_item(2, 1)
+      	}
+      	if(x>w*2 && x<w*3 && y>w*2 && y<w*3) {
+      		put_item(2, 2)
+      	}
+      }
     }
     else {
       alert('choose a room to play')
@@ -568,11 +636,13 @@ function eraseCookie(name) {
 			c = 'red'
 			h = 0
 			p = data[0]
+      // s = score[0]
 		}
 		else {
 			c = 'blue'
 			h = 100
 			p = data[1]
+      // s = score[1]
 		}
 
     ctx.font = "22px Comic Sans MS";
