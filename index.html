@@ -134,9 +134,13 @@ h3 {
   function isActive_listener(current_room_id) {
     const isActiveRef = ref(db, 'rooms/'+ current_room_id + '/isActive');
     onValue(isActiveRef, (snapshot) => {
+      const r = rooms[current_room_id]
       isActive = snapshot.val();
       render_data_score(data, score)
-      sound.play()
+
+      if(user_id == r.p1_id && isActive == 1 || user_id == r.p2_id && isActive == 2) {
+        sound.play()
+      }
     });
   }
 
