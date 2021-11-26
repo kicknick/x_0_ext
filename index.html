@@ -136,11 +136,13 @@ h3 {
     onValue(isActiveRef, (snapshot) => {
       const r = rooms[current_room_id]
       isActive = snapshot.val();
-      render_data_score(data, score)
 
       if(user_id == r.p1_id && isActive == 1 || user_id == r.p2_id && isActive == 2) {
+        const sound = new Audio(mp3_url)
         sound.play()
       }
+
+      render_data_score(data, score)
     });
   }
 
@@ -148,7 +150,7 @@ h3 {
     const who_wonRef = ref(db, 'rooms/'+ current_room_id + '/who_won');
     onValue(who_wonRef, (snapshot) => {
       const won = snapshot.val()
-      // console.log('won', won)
+      console.log('won', won)
       if(won > 0) {
         alert('Player ' + won + ' won!')
       }
@@ -367,7 +369,6 @@ function eraseCookie(name) {
 	,end_button = document.getElementById('endButton')
   ,current_room_id = null
   ,mp3_url = 'https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3'
-  ,sound
   ,user_id
   ,score = [0, 0]
 
@@ -397,7 +398,6 @@ function eraseCookie(name) {
     document.getElementById('create_room').addEventListener("click", e => {
       create_room()
     });
-    sound = new Audio(mp3_url)
 
     //randomly decide who is P1 and who is P2
     user_id = getCookie('user_id')
