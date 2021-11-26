@@ -77,7 +77,7 @@ h3 {
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.5.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.5.0/firebase-analytics.js";
   import { getDatabase, ref, set, onValue, child, get, push, onChildChanged, update } from "https://www.gstatic.com/firebasejs/9.5.0/firebase-database.js";
-  import { collection, doc, onSnapshot, FieldValue } from "https://www.gstatic.com/firebasejs/9.5.0/firebase-firestore.js";
+  import { collection, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.5.0/firebase-firestore.js";
   // TODO: Add SDKs for Firebase products that you want to use
   // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -144,7 +144,7 @@ h3 {
     const who_wonRef = ref(db, 'rooms/'+ current_room_id + '/who_won');
     onValue(who_wonRef, (snapshot) => {
       const won = snapshot.val()
-      console.log('won', won)
+      // console.log('won', won)
       if(won > 0) {
         alert('Player ' + won + ' won!')
       }
@@ -179,12 +179,16 @@ h3 {
       }
 
       const newRoomRef = push(roomListRef);
-      set(newRoomRef, room_data).then(() => {
+      set(newRoomRef, room_data)
+      .then(() => {
         var roomID = newRoomRef.key;
         console.log(roomID)
         callback()
+        // const room_ref = ref(db, 'rooms/'+ roomID)
+        // room_ref.update({ 'who_won': FieldValue.increment(1)})
       })
       .catch((error) => {
+        console.log(error)
         // The write failed...
       });
 
@@ -232,7 +236,7 @@ h3 {
 
 //---------Room selected--------
   function room_choosed(id) {
-    console.log(rooms, current_room_id)
+    // console.log(rooms, current_room_id)
       if(rooms[id].p2_id == 0 && rooms[id].p1_id!=user_id || rooms[id].p1_id == user_id || rooms[id].p2_id == user_id) {
         if(rooms[id].p2_id == 0 && rooms[id].p1_id!=user_id) {
           const updates = {}
@@ -292,17 +296,22 @@ h3 {
       updateMap(JSON.stringify(map_default))
       updateData(JSON.stringify(data_default))
 
+      
+      let current_score = JSON.parse(rooms[current_room_id].score)
+      // console.log(current_score)
+      if(w > 0) {
+        if(w == 1) {
+          update_isActive(2)
+          update_score([current_score[0]+1, current_score[1]])
+        }
+        else {
+          update_isActive(1)
+          update_score([current_score[0], current_score[1]+1])
+        }
+      }
+
       updates['/rooms/' + current_room_id + '/who_won' ] = 0
       update(ref(db), updates)
-
-      if(w == 1) {
-        update_isActive(2)
-        update_score([JSON.parse(rooms[current_room_id].score)[0]+1, JSON.parse(rooms[current_room_id].score[1])])
-      }
-      else {
-        update_isActive(1)
-        update_score([JSON.parse(rooms[current_room_id].score)[0], JSON.parse(rooms[current_room_id].score)[1]+1])
-      }
     })
   }
 
@@ -672,13 +681,13 @@ function eraseCookie(name) {
     let h = 0
     if(player == 2) h = 100
 
-    ctx.font = "22px Comic Sans MS";
-    ctx.fillStyle = "black";
-    ctx.fillText("P"+player, 270, 83+h);
-
     ctx.font = "15px Comic Sans MS";
     ctx.fillStyle = "black";
-    ctx.fillText(score, 300, 83+h);
+    ctx.fillText("P"+player, 295, 85+h);
+
+    ctx.font = "22px Comic Sans MS";
+    ctx.fillStyle = "black";
+    ctx.fillText(score, 275, 85+h);
   }
 
 
