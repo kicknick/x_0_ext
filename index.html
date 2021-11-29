@@ -303,17 +303,17 @@ h3 {
 
 
 //--------Update room---------
-  function update_room(m, d, i, s, ww) {
-    const updates = {}
-    updates['/rooms/' + current_room_id + '/map' ] = m
-    updates['/rooms/' + current_room_id + '/data' ] = d
-    updates['/rooms/' + current_room_id + '/isActive' ] = i
-    updates['/rooms/' + current_room_id + '/score' ] = s
-    updates['/rooms/' + current_room_id + '/who_won' ] = ww
+  // function update_room(m, d, i, s, ww) {
+  //   const updates = {}
+  //   updates['/rooms/' + current_room_id + '/map' ] = m
+  //   updates['/rooms/' + current_room_id + '/data' ] = d
+  //   updates['/rooms/' + current_room_id + '/isActive' ] = i
+  //   updates['/rooms/' + current_room_id + '/score' ] = s
+  //   updates['/rooms/' + current_room_id + '/who_won' ] = ww
 
-    update(ref(db), updates)
-    .then(() => {console.log('room updated!')})
-  }
+  //   update(ref(db), updates)
+  //   .then(() => {console.log('room updated!')})
+  // }
 
 
     // "data": []
@@ -327,34 +327,34 @@ h3 {
     // ,"name": ""
 
 //--------Update map and data--------
-  function updateMap(map) {
-    const updates = {}
-    updates['/rooms/' + current_room_id + '/map' ] = map
-    update(ref(db), updates)
-  }
+  // function updateMap(map) {
+  //   const updates = {}
+  //   updates['/rooms/' + current_room_id + '/map' ] = map
+  //   update(ref(db), updates)
+  // }
 
-  function updateData(data) {
-    const updates = {}
-    updates['/rooms/' + current_room_id + '/data' ] = data
-    update(ref(db), updates)
-  }
+  // function updateData(data) {
+  //   const updates = {}
+  //   updates['/rooms/' + current_room_id + '/data' ] = data
+  //   update(ref(db), updates)
+  // }
 
-  function update_isActive(isAct) {
-    console.log(isActive, isAct)
-    const updates = {}
-    updates['/rooms/' + current_room_id + '/isActive' ] = isAct
-    update(ref(db), updates)
-    .then(() => {
-      console.log('isActive updated', isAct)
-      // isActive = isAct
-    })
-  }
+  // function update_isActive(isAct) {
+  //   console.log(isActive, isAct)
+  //   const updates = {}
+  //   updates['/rooms/' + current_room_id + '/isActive' ] = isAct
+  //   update(ref(db), updates)
+  //   .then(() => {
+  //     console.log('isActive updated', isAct)
+  //     // isActive = isAct
+  //   })
+  // }
 
-  function update_score(s) {
-    const updates = {}
-    updates['/rooms/' + current_room_id + '/score' ] = JSON.stringify(s)
-    update(ref(db), updates)
-  }
+  // function update_score(s) {
+  //   const updates = {}
+  //   updates['/rooms/' + current_room_id + '/score' ] = JSON.stringify(s)
+  //   update(ref(db), updates)
+  // }
 
   // function update_who_won(w) {
   //   const updates = {}
@@ -436,69 +436,6 @@ function getCookie(name) {
 function eraseCookie(name) {   
     document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 }
-
-//---------------Main block------------------
-  var minSide = Math.min(document.documentElement.clientHeight, document.documentElement.clientWidth),
-	// var minSide = 500,
-	w = 70
-	,canvas, ctx
-
-	,data_default = [[5, 3, 1], //number of items small, medium and big
-					         [5, 3, 1]]
-  ,data = JSON.parse(JSON.stringify(data_default))
-	,data_clone = JSON.parse(JSON.stringify(data))
-	,isActive = 1 //current player 1 or 2 if 0 - not started yet
-	,map_default = [[0, 0, 0]
-		             ,[0, 0, 0]
-		             ,[0, 0, 0]]
-  ,map = JSON.parse(JSON.stringify(map_default))
-  ,map_clone = JSON.parse(JSON.stringify(map))
-	,i_prev = -1, j_prev = -1
-	,k_s, k
-	,end_button = document.getElementById('endButton')
-  ,current_room_id = null
-  ,mp3_url = 'https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3'
-  ,user_id
-  ,score = [0, 0]
-
-		//1, 2, 3 = player1
-		//4, 8, 12 = player2
-
-
-  function generate_user_id() {
-    return Date.now()
-  }
-
-  function initGame() {
-    canvas = document.getElementById('field')
-    canvas.width = minSide
-    canvas.height = w*3
-    ctx = canvas.getContext("2d");
-
-    document.getElementById('field').addEventListener("click", e => {
-    	clicked(e.x, e.y)
-    });
-
-    document.getElementById('endButton').addEventListener("click", e => {
-    	end_button_clicked()
-    });
-    end_button.disabled = true
-
-    document.getElementById('create_room').addEventListener("click", e => {
-      create_room()
-    });
-
-    //randomly decide who is P1 and who is P2
-    user_id = getCookie('user_id')
-    if(user_id == null) {
-      user_id = generate_user_id()
-      setCookie('user_id', user_id, 999)
-    }
-
-    // current_room_id = getCookie('current_room_id')
-    // console.log(current_room_id)
-    // increment_score()
-  }
 
 
 //----------Map changed-----------
@@ -625,7 +562,7 @@ function eraseCookie(name) {
 
   function clicked(x, y) {
     console.log(isActive)
-    // console.log(x, y)
+    console.log(x, y)
     if(current_room_id != null) {
       const r = rooms[current_room_id]
       // const r = current_room_snapshot
@@ -641,6 +578,10 @@ function eraseCookie(name) {
       	if(x>w*2 && x<w*3 && y<w) {
       		put_item(0, 2)
       	}
+        if(x>w*3 && x<w*4 && y<w) {
+          put_item(0, 3)
+        }
+
       	if(x<w && y>w && y<w*2) {
       		put_item(1, 0)
       	}
@@ -650,6 +591,10 @@ function eraseCookie(name) {
       	if(x>w*2 && x<w*3 && y>w && y<w*2) {
       		put_item(1, 2)
       	}
+        if(x>w*3 && x<w*4 && y>w && y<w*2) {
+          put_item(1, 3)
+        }
+
       	if(x<w && y>w*2 && y<w*3) {
       		put_item(2, 0)
       	}
@@ -659,6 +604,22 @@ function eraseCookie(name) {
       	if(x>w*2 && x<w*3 && y>w*2 && y<w*3) {
       		put_item(2, 2)
       	}
+        if(x>w*3 && x<w*4 && y>w*2 && y<w*3) {
+          put_item(2, 3)
+        }
+
+        if(x<w && y>w*3 && y<w*4) {
+          put_item(3, 0)
+        }
+        if(x>w && x<w*2 && y>w*3 && y<w*4) {
+          put_item(3, 1)
+        }
+        if(x>w*2 && x<w*3 && y>w*3 && y<w*4) {
+          put_item(3, 2)
+        }
+        if(x>w*3 && x<w*4 && y>w*3 && y<w*4) {
+          put_item(3, 3)
+        }
       }
     }
     else {
@@ -667,8 +628,8 @@ function eraseCookie(name) {
   }
 
   function compare_arrays(a1, a2) {
-  	for(let i=0; i<3; i++) {
-  		for(let j=0; j<3; j++) {
+  	for(let i=0; i<map_dim; i++) {
+  		for(let j=0; j<map_dim; j++) {
   			if(a1[i][j] != a2[i][j]) {
   				return 0
   			}
@@ -715,17 +676,6 @@ function eraseCookie(name) {
   }
 
 
-  function get_smallest_size(cell) {
-  	let s = map[cell[0]][cell[1]]
-  	if(s == 0) return 1
-  	else {
-    	if(s > 3) {
-    		s = s / 4
-    	}
-    	return s
-  	}
-  }
-
 
 //-------- Render------
   function draw_circle(x, y, size, color) {
@@ -752,14 +702,14 @@ function eraseCookie(name) {
 		}
 
 		for(let i = 0; i<p[0]; i++) {
-			draw_circle(250+i*10, 10+h, 5, c)
+			draw_circle(map_dim*w+40+i*10, 10+h, 5, c)
 		}
 		for(let i = 0; i<p[1]; i++) {
-      draw_circle(250+i*25, 35+h, 12, c)
+      draw_circle(map_dim*w+40+i*25, 35+h, 12, c)
 		}
 
 		for(let i = 0; i<p[2]; i++) {
-      draw_circle(250+i*30, 70+h, 18, c)
+      draw_circle(map_dim*w+40+i*30, 70+h, 18, c)
 		}
 	}
 
@@ -768,10 +718,10 @@ function eraseCookie(name) {
     ctx.beginPath()
 
     if (isActive == 1) {
-      ctx.rect(220, 0, 100, 100);
+      ctx.rect(map_dim*w+10, 0, 100, 100);
     }
     else {
-      ctx.rect(220, 100, 100, 100);
+      ctx.rect(map_dim*w+10, 100, 100, 100);
     }
     ctx.stroke();
     ctx.closePath()
@@ -787,35 +737,33 @@ function eraseCookie(name) {
 
     ctx.font = "15px Comic Sans MS";
     ctx.fillStyle = c;
-    ctx.fillText("P"+player, 295, 85+h);
+    ctx.fillText("P"+player, map_dim*w+85, 85+h);
 
     ctx.font = "22px Comic Sans MS";
     ctx.fillStyle = 'black';
-    ctx.fillText(score, 275, 85+h);
+    ctx.fillText(score, map_dim*w+65, 85+h);
   }
 
 
-//--------------Main render-------------------
-
   function render_map(map) {
-    ctx.clearRect(0, 0, w*3, w*3)
-    for(let i=1; i<3; i++) {
+    ctx.clearRect(0, 0, w*map_dim, w*map_dim)
+    for(let i=1; i<map_dim; i++) {
         //ctx.fillStyle = "#00000";
         ctx.beginPath();
         ctx.moveTo(i*w, 0);
-        ctx.lineTo(i*w, w*3);
+        ctx.lineTo(i*w, w*map_dim);
         ctx.stroke()
         ctx.closePath()
 
         ctx.beginPath();
         ctx.moveTo(0, i*w);
-        ctx.lineTo(w*3, i*w);
+        ctx.lineTo(w*map_dim, i*w);
         ctx.stroke()
         ctx.closePath()
     }
     //draw circles
-    for(let i=0; i<3; i++) {
-      for(let j=0; j<3; j++) {
+    for(let i=0; i<map_dim; i++) {
+      for(let j=0; j<map_dim; j++) {
         let s = map[j][i]
         if(s != 0) {
           if(s <= 3) {
@@ -830,7 +778,7 @@ function eraseCookie(name) {
   }
 
   function render_data_score(data, score) {
-    ctx.clearRect(w*3, 0, minSide, w*3)
+    ctx.clearRect(w*map_dim, 0, minSide, w*map_dim)
 
     render_player(1, data)
     render_player(2, data)
@@ -842,17 +790,74 @@ function eraseCookie(name) {
   }
 
 
-//-----------------------------------
 
 
+//---------------Init block------------------
+  var minSide = Math.min(document.documentElement.clientHeight, document.documentElement.clientWidth)
+  // var minSide = 500,
+  ,map_dim = 4
+  ,w = 70
+  ,canvas, ctx
+  ,data_default = [[5, 3, 1], //number of items small, medium and big
+                   [5, 3, 1]]
+  ,data = JSON.parse(JSON.stringify(data_default))
+  ,data_clone = JSON.parse(JSON.stringify(data))
+  ,map_default = []
+  ,map
+  ,map_clone
+  ,isActive = 1 //current player 1 or 2 if 0 - not started yet
+  ,i_prev = -1, j_prev = -1
+  ,k_s, k
+  ,end_button = document.getElementById('endButton')
+  ,current_room_id = null
+  ,mp3_url = 'https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3'
+  ,user_id
+  ,score = [0, 0]
 
-// window.addEventListener("load", function(){
-//   console.log('loaded')
-// });
+    //1, 2, 3 = player1
+    //4, 8, 12 = player2
 
 
+  function generate_user_id() {
+    return Date.now()
+  }
 
-//-----------------
+  function initGame() {
+    canvas = document.getElementById('field')
+    canvas.width = minSide
+    canvas.height = w*map_dim
+    ctx = canvas.getContext("2d");
+
+    for(let i=0; i<map_dim; i++) {
+      map_default.push([])
+      for(let j=0; j<map_dim; j++) {
+        map_default[i].push(0)
+      }
+    }
+    map = JSON.parse(JSON.stringify(map_default))
+    map_clone = JSON.parse(JSON.stringify(map))
+
+    document.getElementById('field').addEventListener("click", e => {
+      clicked(e.x, e.y)
+    });
+
+    document.getElementById('endButton').addEventListener("click", e => {
+      end_button_clicked()
+    });
+    end_button.disabled = true
+
+    document.getElementById('create_room').addEventListener("click", e => {
+      create_room()
+    });
+
+    user_id = getCookie('user_id')
+    if(user_id == null) {
+      user_id = generate_user_id()
+      setCookie('user_id', user_id, 999)
+    }
+  }
+
+
 
   initGame()
 	render_map(map)
