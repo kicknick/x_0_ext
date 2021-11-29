@@ -101,16 +101,44 @@ h3 {
   const roomListRef = ref(db, 'rooms');
 
   let rooms
+  ,current_room_snapshot = {
+    "data": []
+    ,"map": ""
+    ,"isActive": null
+    ,"score": ""
+    ,"who_won": null
+
+    ,"p1_id": null
+    ,"p2_id": null
+    ,"name": ""
+  }
 //------------Rooms updated listener--------
   onValue(roomListRef, (snapshot) => {
     rooms = snapshot.val()
     showRoomList(rooms)
-    console.log(rooms)
-    // if(current_room_id != null) {
-    //   render_data(data)
-    //   const current_room = rooms[current_room_id]
-    //   render_score([current_room.p1_score, current_room.p2_score])
-    // }
+    console.log(rooms, current_room_id, rooms[current_room_id])
+    const current_room_snapshot_new = rooms[current_room_id]
+    if(current_room_snapshot_new) {
+      console.log("rooms[current_room_id] EXIST")
+
+      map = JSON.parse(current_room_snapshot_new.map)
+      render_map(map)
+      isActive = current_room_snapshot_new.isActive
+
+      data = JSON.parse(current_room_snapshot_new.data)
+      score = JSON.parse(current_room_snapshot_new.score)
+      render_data_score(data, score)
+
+      const won = JSON.parse(current_room_snapshot_new.who_won)
+
+      if(won != 0) {
+        alert('Player ' + won + ' won!')
+      }
+
+      // console.log(current_room_snapshot, current_room_snapshot_new)
+      current_room_snapshot = current_room_snapshot_new
+      // console.log(current_room_snapshot)
+    }
   });
 
 //------------Map, Data, isAcive updated listener----------
@@ -243,28 +271,60 @@ h3 {
 //---------Room selected--------
   function room_choosed(id) {
     // console.log(rooms, current_room_id)
-      if(rooms[id].p2_id == 0 && rooms[id].p1_id!=user_id || rooms[id].p1_id == user_id || rooms[id].p2_id == user_id) {
-        if(rooms[id].p2_id == 0 && rooms[id].p1_id!=user_id) {
-          const updates = {}
-          updates['/rooms/' + id + '/p2_id' ] = user_id
-          update(ref(db), updates)
-        }
-        current_room_id = id
-        showRoomList(rooms)
-        setCookie('current_room_id', current_room_id, 999)
-        map_listener(current_room_id)
-        data_listener(current_room_id)
-        isActive_listener(current_room_id)
-        who_won_listener(current_room_id)
-        score_listener(current_room_id)
-        // p1_score_listener(current_room_id)
-        // p2_score_listener(current_room_id)
-        // room_listener(current_room_id)
-        // console.log(rooms, current_room_id, rooms[current_room_id])
+    if(rooms[id].p2_id == 0 && rooms[id].p1_id!=user_id || rooms[id].p1_id == user_id || rooms[id].p2_id == user_id) {
+      if(rooms[id].p2_id == 0 && rooms[id].p1_id!=user_id) {
+        const updates = {}
+        updates['/rooms/' + id + '/p2_id' ] = user_id
+        update(ref(db), updates)
       }
-    // }
+      current_room_id = id
+      const r = rooms[current_room_id]
+      map = JSON.parse(r.map)
+      data = JSON.parse(r.data)
+      score = JSON.parse(r.score)
+      isActive = JSON.parse(r.isActive)
+      render_map(map)
+      render_data_score(data, score)
+
+      showRoomList(rooms)
+      setCookie('current_room_id', current_room_id, 999)
+      // map_listener(current_room_id)
+      // data_listener(current_room_id)
+      // isActive_listener(current_room_id)
+      // who_won_listener(current_room_id)
+      // score_listener(current_room_id)
+
+      // p1_score_listener(current_room_id)
+      // p2_score_listener(current_room_id)
+      // room_listener(current_room_id)
+      // console.log(rooms, current_room_id, rooms[current_room_id])
+    }
   }
 
+
+//--------Update room---------
+  function update_room(m, d, i, s, ww) {
+    const updates = {}
+    updates['/rooms/' + current_room_id + '/map' ] = m
+    updates['/rooms/' + current_room_id + '/data' ] = d
+    updates['/rooms/' + current_room_id + '/isActive' ] = i
+    updates['/rooms/' + current_room_id + '/score' ] = s
+    updates['/rooms/' + current_room_id + '/who_won' ] = ww
+
+    update(ref(db), updates)
+    .then(() => {console.log('room updated!')})
+  }
+
+
+    // "data": []
+    // ,"map": ""
+    // ,"isActive": null
+    // ,"score": ""
+    // ,"who_won": null
+
+    // ,"p1_id": null
+    // ,"p2_id": null
+    // ,"name": ""
 
 //--------Update map and data--------
   function updateMap(map) {
@@ -279,48 +339,77 @@ h3 {
     update(ref(db), updates)
   }
 
-  function update_isActive(isActive) {
+  function update_isActive(isAct) {
+    console.log(isActive, isAct)
     const updates = {}
-    updates['/rooms/' + current_room_id + '/isActive' ] = isActive
+    updates['/rooms/' + current_room_id + '/isActive' ] = isAct
     update(ref(db), updates)
+    .then(() => {
+      console.log('isActive updated', isAct)
+      // isActive = isAct
+    })
   }
 
   function update_score(s) {
     const updates = {}
     updates['/rooms/' + current_room_id + '/score' ] = JSON.stringify(s)
     update(ref(db), updates)
-    .then(() => {
-      
-    })
   }
 
-  function update_who_won(w) {
-    const updates = {}
-    updates['/rooms/' + current_room_id + '/who_won' ] = w
-    update(ref(db), updates)
-    .then(() => {
-      updateMap(JSON.stringify(map_default))
-      updateData(JSON.stringify(data_default))
+  // function update_who_won(w) {
+  //   const updates = {}
+  //   updates['/rooms/' + current_room_id + '/who_won' ] = w
+  //   update(ref(db), updates)
+  //   .then(() => {
+  //     updateMap(JSON.stringify(map_default))
+  //     updateData(JSON.stringify(data_default))
 
       
-      let current_score = JSON.parse(rooms[current_room_id].score)
-      // console.log(current_score)
-      if(w > 0) {
-        if(w == 1) {
-          update_isActive(2)
-          update_score([current_score[0]+1, current_score[1]])
-        }
-        else {
-          update_isActive(1)
-          update_score([current_score[0], current_score[1]+1])
-        }
-      }
+  //     let current_score = JSON.parse(rooms[current_room_id].score)
+  //     // console.log(current_score)
+  //     if(w > 0) {
+  //       if(w == 1) {
 
-      updates['/rooms/' + current_room_id + '/who_won' ] = 0
-      update(ref(db), updates)
-    })
-  }
+  //         update_isActive(2)
+  //         update_score([current_score[0]+1, current_score[1]])
+  //       }
+  //       else {
+  //         update_isActive(1)
+  //         update_score([current_score[0], current_score[1]+1])
+  //       }
+  //     }
+  //     updates['/rooms/' + current_room_id + '/who_won' ] = 0
+  //     update(ref(db), updates)
+  //   })
+  // }
 
+
+  // function update_who_won(w) { //m, d, i, s, ww
+  //   // if(w > 0) {
+  //     let current_score = JSON.parse(rooms[current_room_id].score)
+  //     if(w == 1) {
+  //       isActive = 2
+  //       score = [current_score[0]+1, current_score[1]]
+  //     }
+  //     else {
+  //       isActive = 1
+  //       score = [current_score[0], current_score[1]+1]
+  //     }
+  //   // }
+  //   // update_room(
+  //   //   map_default
+  //   //   ,data_default
+  //   //   ,isActive
+  //   //   ,score
+  //   //   ,w)
+  //   const updates = {}
+  //   updates['/rooms/' + current_room_id + '/map' ] = JSON.stringify(map_default)
+  //   updates['/rooms/' + current_room_id + '/map' ] = JSON.stringify(data_default)
+  //   update(ref(db), updates)
+  //   .then(() => {
+  //     console.log("update_who_won")
+  //   })
+  // }
 
 
 
@@ -429,10 +518,12 @@ function eraseCookie(name) {
           }
       }
       if(w1 == 3 || w1_ == 3) {
-        update_who_won(1)
+        // update_who_won(1)
+        return 1
       }
       else if(w2 == 3 || w2_ == 3) {
-        update_who_won(2)
+        // update_who_won(2)
+        return 2
       }
     }
 
@@ -450,45 +541,82 @@ function eraseCookie(name) {
       }
     // console.log(w1, w2, w1_, w2_)
     if(w1 == 3 || w1_ == 3) {
-      update_who_won(1)
+      // update_who_won(1)
+      return 1
     }
     else if(w2 == 3 || w2_ == 3) {
-      update_who_won(2)
+      // update_who_won(2)
+      return 2
     }
+    return 0
   }
+
 
   function end_button_clicked() {
     // console.log(current_room_id)
     end_button.disabled = true
+    // console.log(isActive, isActive == 1)
   	if (isActive == 1) isActive = 2
   	else isActive = 1
+    console.log('isActive_new', isActive)
   	map = JSON.parse(JSON.stringify(map_clone))
   	data = JSON.parse(JSON.stringify(data_clone))
-    updateMap(JSON.stringify(map))
-    updateData(JSON.stringify(data))
-    update_isActive(isActive)
-    check_if_win()
-  }
 
-  function array_to_object(arr, prefix) {
-    let h = arr.length
-    let w = arr[0].length
-    let c = 0
-    let res = {}
-    let key
-    for(let i=0; i<h; i++) {
-      for(let j=0; j<w; j++) {
-        key = prefix + '_'+ c.toString()
-        res[key] = arr[i][j]
-        c++
+
+    //update after step finished
+    const winner = check_if_win()
+    const updates = {}
+    if(winner != 0) {   
+      updates['/rooms/' + current_room_id + '/who_won' ] = winner
+
+      map = JSON.parse(JSON.stringify(map_default))
+      data = JSON.parse(JSON.stringify(data_default))
+      const current_score = JSON.parse(rooms[current_room_id].score)
+      if(winner == 1) {
+        score = [current_score[0]+1, current_score[1]]
       }
+      else {
+        score = [current_score[0], current_score[1]+1]
+      }
+      updates['/rooms/' + current_room_id + '/score' ] = JSON.stringify(score)
     }
-    return res
+
+    updates['/rooms/' + current_room_id + '/map' ] = JSON.stringify(map)
+    updates['/rooms/' + current_room_id + '/data' ] = JSON.stringify(data)
+    updates['/rooms/' + current_room_id + '/isActive' ] = isActive
+    update(ref(db), updates)
+    .then(() => {
+      console.log("update_after_step_finished")
+      if(winner != 0) {
+        const updates = {}
+        updates['/rooms/' + current_room_id + '/who_won' ] = 0
+        update(ref(db), updates)
+      }
+    })
+    .then(() => {
+      console.log("ww updated")
+    })
+
+    // check_if_win()
+
+
+    // const updates = {};
+    // updates['/rooms/' + current_room_id + '/map' ] = JSON.stringify(map)
+    // updates['/rooms/' + current_room_id + '/data' ] = JSON.stringify(data)
+    // updates['/rooms/' + current_room_id + '/isActive' ] = JSON.stringify(isActive)
+    
+    // update(ref(db), updates)
+    // .then(() => {
+    //   console.log("UPDATED")
+    //   check_if_win() 
+    // }) 
+    // updateMap(JSON.stringify(map))
+    // updateData(JSON.stringify(data))
+    // update_isActive(isActive)
+    
   }
 
-  function object_to_array(obj) {
 
-  }
 
 // console.log(data_default, array_to_object(data_default, 'data'))
 
@@ -496,9 +624,11 @@ function eraseCookie(name) {
   let prev_cell = [0, 0], cell = [0, 0], size = 0
 
   function clicked(x, y) {
+    console.log(isActive)
     // console.log(x, y)
     if(current_room_id != null) {
       const r = rooms[current_room_id]
+      // const r = current_room_snapshot
       if(user_id == r.p1_id && isActive == 1 || user_id == r.p2_id && isActive == 2) {
         // console.log(cell, prev_cell)
       	prev_cell = cell
@@ -608,39 +738,6 @@ function eraseCookie(name) {
   }
 
 
-  function render_map(map) {
-    ctx.clearRect(0, 0, w*3, w*3)
-    for(let i=1; i<3; i++) {
-        //ctx.fillStyle = "#00000";
-        ctx.beginPath();
-        ctx.moveTo(i*w, 0);
-        ctx.lineTo(i*w, w*3);
-        ctx.stroke()
-        ctx.closePath()
-
-        ctx.beginPath();
-        ctx.moveTo(0, i*w);
-        ctx.lineTo(w*3, i*w);
-        ctx.stroke()
-        ctx.closePath()
-    }
-    //draw circles
-    for(let i=0; i<3; i++) {
-    	for(let j=0; j<3; j++) {
-    		let s = map[j][i]
-    		if(s != 0) {
-    			if(s <= 3) {
-    				draw_circle((i+1)*w - w/2, (j+1)*w - w/2, s*5, 'red')
-    			}
-    			else {
-    				draw_circle((i+1)*w - w/2, (j+1)*w - w/2, (s/4)*5, 'blue')
-    			}
-    		}
-    	}
-    }
-  }
-
-
 	function render_player(player, data) {
 		let c, h, p, s
 		if (player == 1) {
@@ -697,6 +794,40 @@ function eraseCookie(name) {
     ctx.fillText(score, 275, 85+h);
   }
 
+
+//--------------Main render-------------------
+
+  function render_map(map) {
+    ctx.clearRect(0, 0, w*3, w*3)
+    for(let i=1; i<3; i++) {
+        //ctx.fillStyle = "#00000";
+        ctx.beginPath();
+        ctx.moveTo(i*w, 0);
+        ctx.lineTo(i*w, w*3);
+        ctx.stroke()
+        ctx.closePath()
+
+        ctx.beginPath();
+        ctx.moveTo(0, i*w);
+        ctx.lineTo(w*3, i*w);
+        ctx.stroke()
+        ctx.closePath()
+    }
+    //draw circles
+    for(let i=0; i<3; i++) {
+      for(let j=0; j<3; j++) {
+        let s = map[j][i]
+        if(s != 0) {
+          if(s <= 3) {
+            draw_circle((i+1)*w - w/2, (j+1)*w - w/2, s*5, 'red')
+          }
+          else {
+            draw_circle((i+1)*w - w/2, (j+1)*w - w/2, (s/4)*5, 'blue')
+          }
+        }
+      }
+    }
+  }
 
   function render_data_score(data, score) {
     ctx.clearRect(w*3, 0, minSide, w*3)
