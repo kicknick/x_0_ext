@@ -126,6 +126,7 @@ h3 {
       console.log("rooms[current_room_id] EXIST")
 
       map = JSON.parse(current_room_snapshot_new.map)
+      map_dim = map.length
       render_map(map)
       isActive = current_room_snapshot_new.isActive
 
@@ -426,8 +427,9 @@ function eraseCookie(name) {
   let prev_cell = [0, 0], cell = [0, 0], size = 0
 
   function clicked(x, y) {
-    console.log(isActive)
-    console.log(x, y)
+    // console.log("map_dim", map_dim)
+    // console.log(x, y)
+    // console.log(current_room_id)
     if(current_room_id != null) {
       const r = rooms[current_room_id]
       // const r = current_room_snapshot
@@ -444,10 +446,13 @@ function eraseCookie(name) {
       	}
       	if(x>w*2 && x<w*3 && y<w) {
       		put_item(0, 2)
-      	}
-        if(x>w*3 && x<w*4 && y<w) {
-          put_item(0, 3)
         }
+        if(map_dim > 3) {
+          if(x>w*3 && x<w*4 && y<w) {
+            put_item(0, 3)
+          }
+        }
+
 
 //------------row 2
       	if(x<w && y>w && y<w*2) {
@@ -458,9 +463,11 @@ function eraseCookie(name) {
       	}
       	if(x>w*2 && x<w*3 && y>w && y<w*2) {
       		put_item(1, 2)
-      	}
-        if(x>w*3 && x<w*4 && y>w && y<w*2) {
-          put_item(1, 3)
+        }
+        if(map_dim > 3) {
+          if(x>w*3 && x<w*4 && y>w && y<w*2) {
+            put_item(1, 3)
+          }
         }
 
 //------------row 3
@@ -472,23 +479,27 @@ function eraseCookie(name) {
       	}
       	if(x>w*2 && x<w*3 && y>w*2 && y<w*3) {
       		put_item(2, 2)
-      	}
-        if(x>w*3 && x<w*4 && y>w*2 && y<w*3) {
-          put_item(2, 3)
+        }
+        if(map_dim > 3) {
+          if(x>w*3 && x<w*4 && y>w*2 && y<w*3) {
+            put_item(2, 3)
+          }
         }
 
 //------------row 4
-        if(x<w && y>w*3 && y<w*4) {
-          put_item(3, 0)
-        }
-        if(x>w && x<w*2 && y>w*3 && y<w*4) {
-          put_item(3, 1)
-        }
-        if(x>w*2 && x<w*3 && y>w*3 && y<w*4) {
-          put_item(3, 2)
-        }
-        if(x>w*3 && x<w*4 && y>w*3 && y<w*4) {
-          put_item(3, 3)
+        if(map_dim > 3) {
+          if(x<w && y>w*3 && y<w*4) {
+            put_item(3, 0)
+          }
+          if(x>w && x<w*2 && y>w*3 && y<w*4) {
+            put_item(3, 1)
+          }
+          if(x>w*2 && x<w*3 && y>w*3 && y<w*4) {
+            put_item(3, 2)
+          }
+          if(x>w*3 && x<w*4 && y>w*3 && y<w*4) {
+            put_item(3, 3)
+          }
         }
       }
     }
@@ -498,6 +509,7 @@ function eraseCookie(name) {
   }
 
   function compare_arrays(a1, a2) {
+    // console.log(a1, a2)
   	for(let i=0; i<map_dim; i++) {
   		for(let j=0; j<map_dim; j++) {
   			if(a1[i][j] != a2[i][j]) {
@@ -516,6 +528,7 @@ function eraseCookie(name) {
   }
 
   function put_item(i, j) {
+    console.log(i, j)
   	let s = map[i][j]
   	if(s > 3) {
   		s = s / 4
@@ -666,9 +679,9 @@ function eraseCookie(name) {
 //---------------Init block------------------
   var minSide = Math.min(document.documentElement.clientHeight, document.documentElement.clientWidth)
   // var minSide = 500,
-  ,map_dim = 4
   ,w = 70
   ,canvas, ctx
+  ,map_dim = 4
   ,data_default_3 = [[5, 3, 1], 
                      [5, 3, 1]]
   ,data_default_4 = [[6, 4, 2], //number of items small, medium and big
