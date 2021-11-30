@@ -242,10 +242,10 @@ h3 {
       score = JSON.parse(r.score)
       isActive = r.isActive
       map_dim = map.length
-      if(dim == 3) {
+      if(map_dim == 3) {
         data_default = JSON.parse(JSON.stringify(data_default_3))           
       } else 
-      if(dim == 4) {
+      if(map_dim == 4) {
         data_default = JSON.parse(JSON.stringify(data_default_4))           
       }
       render_map(map)
