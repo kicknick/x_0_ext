@@ -127,8 +127,8 @@ h3 {
 
       map = JSON.parse(current_room_snapshot_new.map)
       map_dim = map.length
-      console.log('map_dim', map_dim)
       render_map(map)
+      map_default = JSON.parse(JSON.stringify(generate_map(map_dim))) 
       isActive = current_room_snapshot_new.isActive
 
       data = JSON.parse(current_room_snapshot_new.data)
@@ -331,9 +331,7 @@ function eraseCookie(name) {
 
 
   function end_button_clicked() {
-    // console.log(current_room_id)
     end_button.disabled = true
-    // console.log(isActive, isActive == 1)
   	if (isActive == 1) isActive = 2
   	else isActive = 1
     console.log('isActive_new', isActive)
@@ -643,7 +641,7 @@ function eraseCookie(name) {
   ,data_default                
   ,data // = JSON.parse(JSON.stringify(data_default))
   ,data_clone// = JSON.parse(JSON.stringify(data))
-  ,map_default = []
+  ,map_default
   ,map
   ,map_clone
   ,isActive = 1 //current player 1 or 2 if 0 - not started yet
