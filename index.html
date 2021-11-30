@@ -58,6 +58,10 @@ h3 {
         <h3 id='rooms_text'>Rooms</h3>
         <div>
           <input type="text" id="room_name_input" size="8"> 
+          <select id="select_dim">
+            <option value="3">3x3</option>
+            <option value="4">4x4</option>
+          </select>
           <button id='create_room'><b>Create room</b></button>
         </div>
         <br>
@@ -198,12 +202,27 @@ h3 {
 
 
 //-------Create room-----------
-  function createRoom(name, callback) {
+  function createRoom() {
+    let name = document.getElementById("room_name_input").value
     if(name != '') {
+      document.getElementById("room_name_input").value = ''
+      let select = document.getElementById('select_dim');
+      let dim = select.options[select.selectedIndex].value
+      let map = generate_map(dim)
+      if(dim == 3) {
+        data_default = JSON.parse(JSON.stringify(data_default_3))           
+        data = JSON.parse(JSON.stringify(data_default))
+        data_clone = JSON.parse(JSON.stringify(data))
+      } else 
+      if(dim == 4) {
+        data_default = JSON.parse(JSON.stringify(data_default_4))           
+        data = JSON.parse(JSON.stringify(data_default))
+        data_clone = JSON.parse(JSON.stringify(data))
+      }
       let room_data = 
       {
         name: name,
-        map: JSON.stringify(map_default),
+        map: JSON.stringify(map),
         data: JSON.stringify(data_default),
         isActive: 1,
         who_won: 0,
@@ -217,21 +236,13 @@ h3 {
       .then(() => {
         var roomID = newRoomRef.key;
         console.log(roomID)
-        callback()
       })
       .catch((error) => {
         console.log(error)
-        // The write failed...
       });
     }
   }
 
-
-  function create_room() {
-    createRoom(document.getElementById("room_name_input").value, function() {
-    })
-    document.getElementById("room_name_input").value = ''
-  }
 
 
   function showRoomList(list) {
@@ -261,7 +272,7 @@ h3 {
 
 
 
-//---------Room selected--------
+//---------Room choosed--------
   function room_choosed(id) {
     // console.log(rooms, current_room_id)
     if(rooms[id].p2_id == 0 && rooms[id].p1_id!=user_id || rooms[id].p1_id == user_id || rooms[id].p2_id == user_id) {
@@ -278,7 +289,8 @@ h3 {
       map = JSON.parse(r.map)
       data = JSON.parse(r.data)
       score = JSON.parse(r.score)
-      isActive = JSON.parse(r.isActive)
+      isActive = r.isActive
+      map_dim = map.length
       render_map(map)
       render_data_score(data, score)
 
@@ -409,8 +421,6 @@ function eraseCookie(name) {
   }
 
 
-
-// console.log(data_default, array_to_object(data_default, 'data'))
 
 //------------Click on cell on map------
   let prev_cell = [0, 0], cell = [0, 0], size = 0
@@ -606,7 +616,8 @@ function eraseCookie(name) {
 
 
   function render_map(map) {
-    ctx.clearRect(0, 0, w*map_dim, w*map_dim)
+    ctx.clearRect(0, 0, w*4, w*4)
+    //ctx.clearRect(0, 0, w*map_dim, w*map_dim)
     for(let i=1; i<map_dim; i++) {
         //ctx.fillStyle = "#00000";
         ctx.beginPath();
@@ -658,10 +669,13 @@ function eraseCookie(name) {
   ,map_dim = 4
   ,w = 70
   ,canvas, ctx
-  ,data_default = [[6, 4, 2], //number of items small, medium and big
-                   [6, 4, 2]]
-  ,data = JSON.parse(JSON.stringify(data_default))
-  ,data_clone = JSON.parse(JSON.stringify(data))
+  ,data_default_3 = [[5, 3, 1], 
+                     [5, 3, 1]]
+  ,data_default_4 = [[6, 4, 2], //number of items small, medium and big
+                     [6, 4, 2]]
+  ,data_default                
+  ,data // = JSON.parse(JSON.stringify(data_default))
+  ,data_clone// = JSON.parse(JSON.stringify(data))
   ,map_default = []
   ,map
   ,map_clone
@@ -676,11 +690,22 @@ function eraseCookie(name) {
 
     //1, 2, 3 = player1
     //4, 8, 12 = player2
-    
+
 
 
   function generate_user_id() {
     return Date.now()
+  }
+
+  function generate_map(dim) {
+    let map = []
+    for(let i=0; i<dim; i++) {
+      map.push([])
+      for(let j=0; j<dim; j++) {
+        map[i].push(0)
+      }
+    }
+    return map
   }
 
   function initGame() {
@@ -689,12 +714,7 @@ function eraseCookie(name) {
     canvas.height = w*map_dim
     ctx = canvas.getContext("2d");
 
-    for(let i=0; i<map_dim; i++) {
-      map_default.push([])
-      for(let j=0; j<map_dim; j++) {
-        map_default[i].push(0)
-      }
-    }
+    map_default = generate_map(map_dim)
     map = JSON.parse(JSON.stringify(map_default))
     map_clone = JSON.parse(JSON.stringify(map))
 
@@ -708,7 +728,7 @@ function eraseCookie(name) {
     end_button.disabled = true
 
     document.getElementById('create_room').addEventListener("click", e => {
-      create_room()
+      createRoom()
     });
 
     user_id = getCookie('user_id')
