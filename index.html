@@ -47,13 +47,13 @@ h3 {
 </head>
 <body>
   <div id='main'>
-<!--     <p id='player_num'>You are P1</p>
- -->  	<canvas id='field'></canvas>
+  	<canvas id='field'></canvas>
   	<br><br>
   	<button type="button" id = 'endButton'><b>Finish step</b></button>
     <br><br>
+    <!-- Your nickname: 
+    <input type="text"> -->
     <div style="overflow: hidden;">
-
       <div id='rooms'>
         <h3 id='rooms_text'>Rooms</h3>
         <div>
@@ -68,10 +68,6 @@ h3 {
         <table id='list_of_rooms'>
         </table>
       </div>
-
-  <!--     <div id='score'>
-        <h3>Score</h3>
-      </div> -->
     </div>
   </div>
 
@@ -144,11 +140,26 @@ h3 {
 
       const won = JSON.parse(current_room_snapshot_new.who_won)
 
-      if(won == 1 || won == 2) {
-        alert('Player ' + won + ' won!')
-      }
-      else if (won == 3) {
-        alert('Game tied')
+      if(won != 0) {
+        if (won == 1 || won == 2) {
+          alert('Player ' + won + ' won!')
+        }
+        else if (won == 3) {
+          alert('Game tied')
+        }
+        
+        const updates = {}
+        updates['/rooms/' + current_room_id + '/map' ] = JSON.stringify(map_default)
+        updates['/rooms/' + current_room_id + '/data' ] = JSON.stringify(data_default)
+        updates['/rooms/' + current_room_id + '/who_won' ] = 0
+        update(ref(db), updates)
+        .then(() => {
+          console.log("map, data default updated")
+        })
+        .catch((error) => {
+          console.log(error)
+          alert(error)
+        });
       }
 
       // console.log(current_room_snapshot, current_room_snapshot_new)
@@ -156,7 +167,6 @@ h3 {
       // console.log(current_room_snapshot)
     }
   });
-
 
 
 
@@ -346,7 +356,6 @@ function eraseCookie(name) {
 
 
   function end_button_clicked() {
-    end_button.disabled = true
   	if (isActive == 1) isActive = 2
   	else isActive = 1
     console.log('isActive_new', isActive)
@@ -360,8 +369,8 @@ function eraseCookie(name) {
     if(winner != 0) {   
       updates['/rooms/' + current_room_id + '/who_won' ] = winner
 
-      map = JSON.parse(JSON.stringify(map_default))
-      data = JSON.parse(JSON.stringify(data_default))
+      // map = JSON.parse(JSON.stringify(map_default))
+      // data = JSON.parse(JSON.stringify(data_default))
       const current_score = JSON.parse(rooms[current_room_id].score)
       if(winner == 1) {
         score = [current_score[0]+1, current_score[1]]
@@ -381,15 +390,20 @@ function eraseCookie(name) {
     update(ref(db), updates)
     .then(() => {
       console.log("update_after_step_finished")
-      if(winner != 0) {
-        const updates = {}
-        updates['/rooms/' + current_room_id + '/who_won' ] = 0
-        update(ref(db), updates)
-      }
+      end_button.disabled = true
+      // if(winner != 0) {
+      //   const updates = {}
+      //   updates['/rooms/' + current_room_id + '/who_won' ] = 0
+      //   update(ref(db), updates)
+      // }
     })
     .then(() => {
       console.log("ww updated")
-    })    
+    })
+    .catch((error) => {
+        alert(error)
+        console.log(error)
+      });
   }
 
 
@@ -599,6 +613,7 @@ function eraseCookie(name) {
 
 
   function render_map(map) {
+    console.log('map rendered')
     ctx.clearRect(0, 0, w*4, w*4)
     //ctx.clearRect(0, 0, w*map_dim, w*map_dim)
     for(let i=1; i<map_dim; i++) {
