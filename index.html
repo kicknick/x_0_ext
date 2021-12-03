@@ -148,18 +148,18 @@ h3 {
           alert('Game tied')
         }
         
-        // const updates = {}
-        // updates['/rooms/' + current_room_id + '/map' ] = JSON.stringify(map_default)
-        // updates['/rooms/' + current_room_id + '/data' ] = JSON.stringify(data_default)
-        // updates['/rooms/' + current_room_id + '/who_won' ] = 0
-        // update(ref(db), updates)
-        // .then(() => {
-        //   console.log("map, data default updated")
-        // })
-        // .catch((error) => {
-        //   console.log(error)
-        //   alert(error)
-        // });
+        const updates = {}
+        updates['/rooms/' + current_room_id + '/map' ] = JSON.stringify(map_default)
+        updates['/rooms/' + current_room_id + '/data' ] = JSON.stringify(data_default)
+        updates['/rooms/' + current_room_id + '/who_won' ] = 0
+        update(ref(db), updates)
+        .then(() => {
+          console.log("map, data default updated")
+        })
+        .catch((error) => {
+          console.log(error)
+          alert(error)
+        });
       }
 
       // console.log(current_room_snapshot, current_room_snapshot_new)
