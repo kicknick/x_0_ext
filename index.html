@@ -120,7 +120,6 @@ h3 {
     const current_room_snapshot_new = rooms[current_room_id]
     if(current_room_snapshot_new) {
       // console.log("rooms[current_room_id] EXIST")
-
       map = JSON.parse(current_room_snapshot_new.map)
       map_dim = map.length
       render_map(map)
@@ -143,23 +142,24 @@ h3 {
       if(won != 0) {
         if (won == 1 || won == 2) {
           alert('Player ' + won + ' won!')
+          // setTimeout(() => {alert('Player ' + won + ' won!')}, 2000)
         }
         else if (won == 3) {
           alert('Game tied')
         }
         
-        const updates = {}
-        updates['/rooms/' + current_room_id + '/map' ] = JSON.stringify(map_default)
-        updates['/rooms/' + current_room_id + '/data' ] = JSON.stringify(data_default)
-        updates['/rooms/' + current_room_id + '/who_won' ] = 0
-        update(ref(db), updates)
-        .then(() => {
-          console.log("map, data default updated")
-        })
-        .catch((error) => {
-          console.log(error)
-          alert(error)
-        });
+        // const updates = {}
+        // updates['/rooms/' + current_room_id + '/map' ] = JSON.stringify(map_default)
+        // updates['/rooms/' + current_room_id + '/data' ] = JSON.stringify(data_default)
+        // updates['/rooms/' + current_room_id + '/who_won' ] = 0
+        // update(ref(db), updates)
+        // .then(() => {
+        //   console.log("map, data default updated")
+        // })
+        // .catch((error) => {
+        //   console.log(error)
+        //   alert(error)
+        // });
       }
 
       // console.log(current_room_snapshot, current_room_snapshot_new)
@@ -613,7 +613,6 @@ function eraseCookie(name) {
 
 
   function render_map(map) {
-    console.log('map rendered')
     ctx.clearRect(0, 0, w*4, w*4)
     //ctx.clearRect(0, 0, w*map_dim, w*map_dim)
     for(let i=1; i<map_dim; i++) {
@@ -644,6 +643,7 @@ function eraseCookie(name) {
         }
       }
     }
+    console.log('map rendered')
   }
 
   function render_data_score(data, score) {
